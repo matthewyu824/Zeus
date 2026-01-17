@@ -6,24 +6,27 @@ import os
 import pyperclip
 
 POINTS_FILE = "collected_points.json"
+GROUPS_FILE = "groups.json"
 
 class PointCollector:
     def __init__(self):
         self.points = []
         self.listener = None
         self.collecting = True
+        self.common_points = []
+        self.group_points = {}
 
     def on_click(self, x, y, button, pressed):
         if pressed and button == mouse.Button.left:
             self.points.append((x, y))
             print(f"已收集第 {len(self.points)} 个点: ({x}, {y})")
             
-            if len(self.points) >= 4:
+            if len(self.points) >= 5:
                 self.collecting = False
                 return False
 
     def collect_points(self):
-        print("请在屏幕上点击 4 个位置来收集坐标点...")
+        print("请在屏幕上点击 5 个位置来收集坐标点...")
         print("点击鼠标左键来记录位置")
         
         self.points = []
@@ -32,7 +35,7 @@ class PointCollector:
         with mouse.Listener(on_click=self.on_click) as listener:
             listener.join()
         
-        print(f"\n收集完成！4 个点的坐标：")
+        print(f"\n收集完成！5 个点的坐标：")
         for i, point in enumerate(self.points, 1):
             print(f"点 {i}: {point}")
         
@@ -53,6 +56,70 @@ class PointCollector:
         
         return points
 
+    def save_groups(self, common_points, group_points):
+        data = {
+            "common_points": common_points,
+            "group_points": group_points
+        }
+        with open(GROUPS_FILE, 'w') as f:
+            json.dump(data, f, indent=2)
+        print(f"\n组数据已保存到文件: {GROUPS_FILE}")
+
+    def load_groups(self):
+        if not os.path.exists(GROUPS_FILE):
+            return None
+        
+        with open(GROUPS_FILE, 'r') as f:
+            data = json.load(f)
+        
+        return data
+
+    def collect_common_points(self):
+        print("\n请收集公共点（点2、点3）...")
+        print("点击鼠标左键来记录位置")
+        
+        self.common_points = []
+        
+        def on_click(x, y, button, pressed):
+            if pressed and button == mouse.Button.left:
+                self.common_points.append((x, y))
+                print(f"已收集第 {len(self.common_points)} 个公共点: ({x}, {y})")
+                
+                if len(self.common_points) >= 2:
+                    return False
+        
+        with mouse.Listener(on_click=on_click) as listener:
+            listener.join()
+        
+        print(f"\n公共点收集完成！")
+        for i, point in enumerate(self.common_points, 1):
+            print(f"公共点 {i}: {point}")
+        
+        return self.common_points
+
+    def collect_group_points(self, group_id):
+        print(f"\n请收集组 {group_id} 的特定点（点1、点4、点5）...")
+        print("点击鼠标左键来记录位置")
+        
+        group_points = []
+        
+        def on_click(x, y, button, pressed):
+            if pressed and button == mouse.Button.left:
+                group_points.append((x, y))
+                print(f"已收集第 {len(group_points)} 个特定点: ({x}, {y})")
+                
+                if len(group_points) >= 3:
+                    return False
+        
+        with mouse.Listener(on_click=on_click) as listener:
+            listener.join()
+        
+        print(f"\n组 {group_id} 特定点收集完成！")
+        for i, point in enumerate(group_points, 1):
+            print(f"特定点 {i}: {point}")
+        
+        return group_points
+
     def execute_clicks(self, points):
         if len(points) != 4:
             print("错误：需要 4 个点才能执行点击操作")
@@ -65,7 +132,7 @@ class PointCollector:
             pyautogui.click(x, y)
             time.sleep(1)
             
-            if i == 1:
+            if i == 2:
                 print("输入文字：厉害")
                 pyperclip.copy('好听')
                 pyautogui.hotkey('ctrl', 'v')
@@ -78,7 +145,7 @@ def collect_points_to_file():
     
     points = collector.collect_points()
     
-    if len(points) == 4:
+    if len(points) == 5:
         collector.save_points_to_file(points)
     else:
         print("收集的点数量不足")
@@ -100,24 +167,42 @@ def execute_clicks_from_file():
     
     collector.execute_clicks(points)
 
-def send_message(message):
+def send_message(message, group_id):
     collector = PointCollector()
     
-    points = collector.load_points_from_file()
+    groups_data = collector.load_groups()
     
-    if points is None:
-        print("错误：无法读取坐标点文件")
+    if groups_data is None:
+        print("错误：无法读取组数据文件")
         return
     
-    if len(points) < 2:
-        print("错误：需要至少 2 个坐标点")
+    common_points = groups_data.get("common_points", [])
+    group_points = groups_data.get("group_points", {})
+    
+    if group_id not in group_points:
+        print(f"错误：组 {group_id} 不存在")
         return
+    
+    if len(common_points) < 2:
+        print("错误：公共点数据不足")
+        return
+    
+    if len(group_points[group_id]) < 3:
+        print(f"错误：组 {group_id} 的特定点数据不足")
+        return
+    
+    group_specific = group_points[group_id]
     
     print(f"\n发送消息: {message}")
-    print(f"使用 {len(points)} 个坐标点")
+    print(f"使用组 {group_id} 的标注点")
     
-    x, y = points[0]
-    print(f"点击第 1 个位置: ({x}, {y})")
+    x, y = group_specific[0]
+    print(f"点击起始点（组{group_id} 点1）: ({x}, {y})")
+    pyautogui.click(x, y)
+    time.sleep(1)
+    
+    x, y = common_points[0]
+    print(f"点击输入框（公共点1）: ({x}, {y})")
     pyautogui.click(x, y)
     time.sleep(1)
     
@@ -126,28 +211,65 @@ def send_message(message):
     pyautogui.hotkey('ctrl', 'v')
     time.sleep(1)
     
-    for i, (x, y) in enumerate(points[1:], 2):
-        print(f"点击第 {i} 个位置: ({x}, {y})")
-        pyautogui.click(x, y)
-        time.sleep(1)
+    x, y = common_points[1]
+    print(f"点击第2个位置（公共点2）: ({x}, {y})")
+    pyautogui.click(x, y)
+    time.sleep(1)
+    
+    x, y = group_specific[1]
+    print(f"点击第3个位置（组{group_id} 点4）: ({x}, {y})")
+    pyautogui.click(x, y)
+    time.sleep(1)
+    
+    x, y = group_specific[2]
+    print(f"点击第4个位置（组{group_id} 点5）: ({x}, {y})")
+    pyautogui.click(x, y)
+    time.sleep(1)
     
     print("\n消息发送完成！")
 
 def main():
     print("请选择操作：")
-    print("1. 收集坐标点并保存到文件")
-    print("2. 从文件读取坐标点并执行点击")
+    print("1. 收集公共点（点2、点3）")
+    print("2. 收集组特定点（点1、点4、点5）")
     print("3. 发送消息（使用 send_message 函数）")
+    print("4. 查看所有组信息")
     
-    choice = input("\n请输入选项 (1, 2 或 3): ").strip()
+    choice = input("\n请输入选项 (1, 2, 3 或 4): ").strip()
+    
+    collector = PointCollector()
+    groups_data = collector.load_groups()
+    
+    if groups_data is None:
+        groups_data = {"common_points": [], "group_points": {}}
     
     if choice == "1":
-        collect_points_to_file()
+        common_points = collector.collect_common_points()
+        groups_data["common_points"] = common_points
+        collector.save_groups(groups_data["common_points"], groups_data["group_points"])
+        
     elif choice == "2":
-        execute_clicks_from_file()
+        group_id = input("请输入组ID（如 group1, group2 等）: ").strip()
+        group_points = collector.collect_group_points(group_id)
+        groups_data["group_points"][group_id] = group_points
+        collector.save_groups(groups_data["common_points"], groups_data["group_points"])
+        
     elif choice == "3":
-        # message = input("请输入要发送的消息: ").strip()
-        send_message("好听")
+        message = input("请输入要发送的消息: ").strip()
+        group_id = input("请输入组ID: ").strip()
+        send_message(message, group_id)
+        
+    elif choice == "4":
+        print("\n=== 组信息 ===")
+        print(f"公共点数量: {len(groups_data['common_points'])}")
+        for i, point in enumerate(groups_data['common_points'], 1):
+            print(f"  公共点 {i}: {point}")
+        
+        print(f"\n组数量: {len(groups_data['group_points'])}")
+        for group_id, points in groups_data['group_points'].items():
+            print(f"\n组 {group_id}:")
+            for i, point in enumerate(points, 1):
+                print(f"  特定点 {i}: {point}")
     else:
         print("无效的选项")
 

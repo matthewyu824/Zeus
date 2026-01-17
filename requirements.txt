@@ -1,3 +1,6 @@
 pyautogui
 Pillow
 paddleocr
+flask
+pynput
+pyperclip

@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>屏幕操作控制面板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: #667eea;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .status-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin-top: 10px;
+            min-height: 60px;
+        }
+
+        .status-text {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .status-text.success {
+            color: #28a745;
+        }
+
+        .status-text.error {
+            color: #dc3545;
+        }
+
+        .points-display {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .point-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .point-item:last-child {
+            border-bottom: none;
+        }
+
+        .point-label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .point-coords {
+            color: #667eea;
+            font-family: monospace;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .group-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .group-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .group-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .group-points-count {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .delete-group-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-group-btn:hover {
+            background: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖥️ 屏幕操作控制面板</h1>
+
+        <div class="section">
+            <div class="section-title">收集坐标点</div>
+            <button id="collectCommonBtn" class="btn btn-primary" onclick="startCollectCommon()">
+                收集公共点（点2、点3）
+            </button>
+            <div class="input-group">
+                <input type="text" id="groupIdInput" class="input-field" placeholder="输入组ID（如 group1, group2）">
+                <button id="collectGroupBtn" class="btn btn-primary" onclick="startCollectGroup()">
+                    收集组特定点
+                </button>
+            </div>
+            <div class="status-box">
+                <div id="collectStatus" class="status-text">点击按钮开始收集坐标点</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">发送消息</div>
+            <div class="input-group">
+                <input type="text" id="messageInput" class="input-field" placeholder="请输入要发送的消息">
+                <select id="groupSelect" class="input-field" style="flex: 0.5;">
+                    <option value="">选择组</option>
+                </select>
+                <button id="sendBtn" class="btn btn-success" onclick="sendMessage()">
+                    发送消息
+                </button>
+            </div>
+            <div class="status-box">
+                <div id="sendStatus" class="status-text">输入消息并选择组后点击发送</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">已保存的组信息</div>
+            <button class="btn btn-primary" onclick="loadGroups()">
+                刷新组列表
+            </button>
+            <div id="groupsDisplay" class="points-display">
+                <div class="point-item">
+                    <span class="point-label">暂无组数据</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">群控功能</div>
+            <div class="input-group">
+                <select id="scriptCategorySelect" class="input-field">
+                    <option value="">选择话术类别</option>
+                </select>
+                <button id="startBatchBtn" class="btn btn-success" onclick="startBatchControl()">
+                    开始群控
+                </button>
+                <button id="stopBatchBtn" class="btn btn-danger" onclick="stopBatchControl()" disabled>
+                    停止群控
+                </button>
+            </div>
+            <div class="status-box">
+                <div id="batchStatus" class="status-text">选择话术类别后点击开始群控</div>
+            </div>
+            <div class="points-display" style="margin-top: 10px;">
+                <div class="point-item">
+                    <span class="point-label">已发送消息数：</span>
+                    <span class="point-coords" id="sentCount">0</span>
+                </div>
+                <div class="point-item">
+                    <span class="point-label">当前组：</span>
+                    <span class="point-coords" id="currentGroup">-</span>
+                </div>
+                <div class="point-item">
+                    <span class="point-label">当前消息：</span>
+                    <span class="point-coords" id="currentMessage">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let statusInterval = null;
+        let batchStatusInterval = null;
+
+        async function startCollectCommon() {
+            const collectCommonBtn = document.getElementById('collectCommonBtn');
+            const collectGroupBtn = document.getElementById('collectGroupBtn');
+            const collectStatus = document.getElementById('collectStatus');
+            
+            collectCommonBtn.disabled = true;
+            collectGroupBtn.disabled = true;
+            collectStatus.innerHTML = '<span class="loading"></span>正在启动收集...';
+            
+            try {
+                const response = await fetch('/api/collect/common', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    collectStatus.textContent = data.message;
+                    startStatusPolling();
+                } else {
+                    collectStatus.textContent = data.message;
+                    collectStatus.className = 'status-text error';
+                    collectCommonBtn.disabled = false;
+                    collectGroupBtn.disabled = false;
+                }
+            } catch (error) {
+                collectStatus.textContent = '启动失败：' + error.message;
+                collectStatus.className = 'status-text error';
+                collectCommonBtn.disabled = false;
+                collectGroupBtn.disabled = false;
+            }
+        }
+
+        async function startCollectGroup() {
+            const groupIdInput = document.getElementById('groupIdInput');
+            const collectCommonBtn = document.getElementById('collectCommonBtn');
+            const collectGroupBtn = document.getElementById('collectGroupBtn');
+            const collectStatus = document.getElementById('collectStatus');
+            
+            const groupId = groupIdInput.value.trim();
+            
+            if (!groupId) {
+                collectStatus.textContent = '请输入组ID';
+                collectStatus.className = 'status-text error';
+                return;
+            }
+            
+            collectCommonBtn.disabled = true;
+            collectGroupBtn.disabled = true;
+            collectStatus.innerHTML = '<span class="loading"></span>正在启动收集...';
+            
+            try {
+                const response = await fetch('/api/collect/group', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ group_id: groupId })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    collectStatus.textContent = data.message;
+                    startStatusPolling();
+                } else {
+                    collectStatus.textContent = data.message;
+                    collectStatus.className = 'status-text error';
+                    collectCommonBtn.disabled = false;
+                    collectGroupBtn.disabled = false;
+                }
+            } catch (error) {
+                collectStatus.textContent = '启动失败：' + error.message;
+                collectStatus.className = 'status-text error';
+                collectCommonBtn.disabled = false;
+                collectGroupBtn.disabled = false;
+            }
+        }
+
+        function startStatusPolling() {
+            if (statusInterval) {
+                clearInterval(statusInterval);
+            }
+            
+            statusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/status');
+                    const data = await response.json();
+                    
+                    const collectStatus = document.getElementById('collectStatus');
+                    const collectCommonBtn = document.getElementById('collectCommonBtn');
+                    const collectGroupBtn = document.getElementById('collectGroupBtn');
+                    
+                    collectStatus.textContent = data.message;
+                    
+                    if (data.status === 'collecting') {
+                        collectStatus.className = 'status-text';
+                    } else if (data.status === 'completed') {
+                        collectStatus.className = 'status-text success';
+                        collectCommonBtn.disabled = false;
+                        collectGroupBtn.disabled = false;
+                        clearInterval(statusInterval);
+                        loadGroups();
+                    } else if (data.status === 'error') {
+                        collectStatus.className = 'status-text error';
+                        collectCommonBtn.disabled = false;
+                        collectGroupBtn.disabled = false;
+                        clearInterval(statusInterval);
+                    }
+                } catch (error) {
+                    console.error('获取状态失败:', error);
+                }
+            }, 500);
+        }
+
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const groupSelect = document.getElementById('groupSelect');
+            const sendBtn = document.getElementById('sendBtn');
+            const sendStatus = document.getElementById('sendStatus');
+            
+            const message = messageInput.value.trim();
+            const groupId = groupSelect.value;
+            
+            if (!message) {
+                sendStatus.textContent = '请输入消息内容';
+                sendStatus.className = 'status-text error';
+                return;
+            }
+            
+            if (!groupId) {
+                sendStatus.textContent = '请选择组';
+                sendStatus.className = 'status-text error';
+                return;
+            }
+            
+            sendBtn.disabled = true;
+            sendStatus.innerHTML = '<span class="loading"></span>正在发送消息...';
+            
+            try {
+                const response = await fetch('/api/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message, group_id: groupId })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    sendStatus.textContent = data.message;
+                    sendStatus.className = 'status-text success';
+                } else {
+                    sendStatus.textContent = data.message;
+                    sendStatus.className = 'status-text error';
+                }
+            } catch (error) {
+                sendStatus.textContent = '发送失败：' + error.message;
+                sendStatus.className = 'status-text error';
+            }
+            
+            sendBtn.disabled = false;
+        }
+
+        async function loadGroups() {
+            try {
+                const response = await fetch('/api/groups');
+                const data = await response.json();
+                
+                const groupsDisplay = document.getElementById('groupsDisplay');
+                const groupSelect = document.getElementById('groupSelect');
+                
+                if (data.success && data.data) {
+                    const commonPoints = data.data.common_points || [];
+                    const groupPoints = data.data.group_points || {};
+                    
+                    let html = '';
+                    
+                    if (commonPoints.length > 0) {
+                        html += '<div style="margin-bottom: 15px;"><strong>公共点：</strong><br>';
+                        commonPoints.forEach((point, index) => {
+                            html += `<div class="point-item">
+                                <span class="point-label">公共点 ${index + 1}</span>
+                                <span class="point-coords">(${point[0]}, ${point[1]})</span>
+                            </div>`;
+                        });
+                        html += '</div>';
+                    }
+                    
+                    if (Object.keys(groupPoints).length > 0) {
+                        html += '<strong>组列表：</strong><br>';
+                        html += '<div class="group-list">';
+                        
+                        for (const [groupId, points] of Object.entries(groupPoints)) {
+                            html += `
+                                <div class="group-item">
+                                    <span class="group-name">${groupId}</span>
+                                    <span class="group-points-count">${points.length} 个点</span>
+                                    <button class="delete-group-btn" onclick="deleteGroup('${groupId}')">×</button>
+                                </div>
+                            `;
+                        }
+                        
+                        html += '</div>';
+                    }
+                    
+                    if (!html) {
+                        html = '<div class="point-item"><span class="point-label">暂无组数据</span></div>';
+                    }
+                    
+                    groupsDisplay.innerHTML = html;
+                    
+                    groupSelect.innerHTML = '<option value="">选择组</option>';
+                    for (const groupId of Object.keys(groupPoints)) {
+                        groupSelect.innerHTML += `<option value="${groupId}">${groupId}</option>`;
+                    }
+                } else {
+                    groupsDisplay.innerHTML = `
+                        <div class="point-item">
+                            <span class="point-label">暂无组数据</span>
+                        </div>
+                    `;
+                    groupSelect.innerHTML = '<option value="">选择组</option>';
+                }
+            } catch (error) {
+                console.error('加载组数据失败:', error);
+            }
+        }
+
+        async function deleteGroup(groupId) {
+            if (!confirm(`确定要删除组 ${groupId} 吗？`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/groups/${groupId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadGroups();
+                } else {
+                    alert('删除失败：' + data.message);
+                }
+            } catch (error) {
+                alert('删除失败：' + error.message);
+            }
+        }
+
+        async function loadScriptCategories() {
+            try {
+                const response = await fetch('/api/scripts/categories');
+                const data = await response.json();
+                
+                const scriptCategorySelect = document.getElementById('scriptCategorySelect');
+                
+                if (data.success && data.categories) {
+                    scriptCategorySelect.innerHTML = '<option value="">选择话术类别</option>';
+                    data.categories.forEach(category => {
+                        scriptCategorySelect.innerHTML += `<option value="${category}">${category}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('加载话术类别失败:', error);
+            }
+        }
+
+        async function startBatchControl() {
+            const scriptCategorySelect = document.getElementById('scriptCategorySelect');
+            const startBatchBtn = document.getElementById('startBatchBtn');
+            const stopBatchBtn = document.getElementById('stopBatchBtn');
+            const batchStatus = document.getElementById('batchStatus');
+            
+            const category = scriptCategorySelect.value;
+            
+            if (!category) {
+                batchStatus.textContent = '请选择话术类别';
+                batchStatus.className = 'status-text error';
+                return;
+            }
+            
+            startBatchBtn.disabled = true;
+            stopBatchBtn.disabled = false;
+            batchStatus.innerHTML = '<span class="loading"></span>正在启动群控...';
+            
+            try {
+                const response = await fetch('/api/batch/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ category: category })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    batchStatus.textContent = data.message;
+                    batchStatus.className = 'status-text success';
+                    startBatchStatusPolling();
+                } else {
+                    batchStatus.textContent = data.message;
+                    batchStatus.className = 'status-text error';
+                    startBatchBtn.disabled = false;
+                    stopBatchBtn.disabled = true;
+                }
+            } catch (error) {
+                batchStatus.textContent = '启动失败：' + error.message;
+                batchStatus.className = 'status-text error';
+                startBatchBtn.disabled = false;
+                stopBatchBtn.disabled = true;
+            }
+        }
+
+        async function stopBatchControl() {
+            const startBatchBtn = document.getElementById('startBatchBtn');
+            const stopBatchBtn = document.getElementById('stopBatchBtn');
+            const batchStatus = document.getElementById('batchStatus');
+            
+            stopBatchBtn.disabled = true;
+            batchStatus.innerHTML = '<span class="loading"></span>正在停止群控...';
+            
+            try {
+                const response = await fetch('/api/batch/stop', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    batchStatus.textContent = data.message;
+                    batchStatus.className = 'status-text success';
+                    startBatchBtn.disabled = false;
+                } else {
+                    batchStatus.textContent = data.message;
+                    batchStatus.className = 'status-text error';
+                    stopBatchBtn.disabled = false;
+                }
+            } catch (error) {
+                batchStatus.textContent = '停止失败：' + error.message;
+                batchStatus.className = 'status-text error';
+                stopBatchBtn.disabled = false;
+            }
+        }
+
+        function startBatchStatusPolling() {
+            if (batchStatusInterval) {
+                clearInterval(batchStatusInterval);
+            }
+            
+            batchStatusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/batch/status');
+                    const data = await response.json();
+                    
+                    const batchStatus = document.getElementById('batchStatus');
+                    const startBatchBtn = document.getElementById('startBatchBtn');
+                    const stopBatchBtn = document.getElementById('stopBatchBtn');
+                    const sentCount = document.getElementById('sentCount');
+                    const currentGroup = document.getElementById('currentGroup');
+                    const currentMessage = document.getElementById('currentMessage');
+                    
+                    batchStatus.textContent = data.message;
+                    sentCount.textContent = data.sent_count || 0;
+                    currentGroup.textContent = data.current_group || '-';
+                    currentMessage.textContent = data.message.split('：')[1] || '-';
+                    
+                    if (data.status === 'running') {
+                        batchStatus.className = 'status-text';
+                        startBatchBtn.disabled = true;
+                        stopBatchBtn.disabled = false;
+                    } else if (data.status === 'idle') {
+                        batchStatus.className = 'status-text success';
+                        startBatchBtn.disabled = false;
+                        stopBatchBtn.disabled = true;
+                        clearInterval(batchStatusInterval);
+                    } else if (data.status === 'error') {
+                        batchStatus.className = 'status-text error';
+                        startBatchBtn.disabled = false;
+                        stopBatchBtn.disabled = true;
+                        clearInterval(batchStatusInterval);
+                    }
+                } catch (error) {
+                    console.error('获取群控状态失败:', error);
+                }
+            }, 500);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGroups();
+            loadScriptCategories();
+        });
+
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        document.getElementById('groupIdInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startCollectGroup();
+            }
+        });
+    </script>
+</body>
+</html>
