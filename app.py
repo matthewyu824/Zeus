@@ -3,7 +3,8 @@ import threading
 import json
 import random
 import time
-from screen_operation import PointCollector, send_message
+from pynput import keyboard
+from screen_operation import PointCollector, send_message, send_message_all
 
 app = Flask(__name__)
 
@@ -14,20 +15,21 @@ collecting_status = {"status": "idle", "type": "", "points": [], "message": "", 
 batch_control_status = {"status": "idle", "message": "", "category": "", "current_group": "", "sent_count": 0}
 batch_control_thread = None
 batch_control_running = False
+keyboard_listener = None
 
 def collect_common_points_background():
     global collecting_status
     collecting_status["status"] = "collecting"
     collecting_status["type"] = "common"
     collecting_status["points"] = []
-    collecting_status["message"] = "开始收集公共点（点2、点3），请在屏幕上点击位置..."
+    collecting_status["message"] = "开始收集公共点（6个点），请在屏幕上点击位置..."
     
     def on_click(x, y, button, pressed):
         if pressed and button.name == 'left':
             collecting_status["points"].append((x, y))
             collecting_status["message"] = f"已收集第 {len(collecting_status['points'])} 个公共点: ({x}, {y})"
             
-            if len(collecting_status["points"]) >= 2:
+            if len(collecting_status["points"]) >= 6:
                 collecting_status["status"] = "completed"
                 collecting_status["message"] = "公共点收集完成！"
                 return False
@@ -36,7 +38,7 @@ def collect_common_points_background():
     with mouse.Listener(on_click=on_click) as listener:
         listener.join()
     
-    if len(collecting_status["points"]) == 2:
+    if len(collecting_status["points"]) == 6:
         groups_data = collector.load_groups()
         if groups_data is None:
             groups_data = {"common_points": [], "group_points": {}}
@@ -45,7 +47,7 @@ def collect_common_points_background():
         collecting_status["message"] = "公共点已保存到文件"
     else:
         collecting_status["status"] = "error"
-        collecting_status["message"] = f"收集的点数量不足，需要2个点，实际收集了{len(collecting_status['points'])}个点"
+        collecting_status["message"] = f"收集的点数量不足，需要6个点，实际收集了{len(collecting_status['points'])}个点"
 
 def collect_group_points_background(group_id):
     global collecting_status
@@ -53,7 +55,7 @@ def collect_group_points_background(group_id):
     collecting_status["type"] = "group"
     collecting_status["group_id"] = group_id
     collecting_status["points"] = []
-    collecting_status["message"] = f"开始收集组 {group_id} 的特定点（点1、点4、点5），请在屏幕上点击位置..."
+    collecting_status["message"] = f"开始收集设备 {group_id} 的特定点（点1、点4、点5），请在屏幕上点击位置..."
     
     def on_click(x, y, button, pressed):
         if pressed and button.name == 'left':
@@ -62,7 +64,7 @@ def collect_group_points_background(group_id):
             
             if len(collecting_status["points"]) >= 3:
                 collecting_status["status"] = "completed"
-                collecting_status["message"] = f"组 {group_id} 特定点收集完成！"
+                collecting_status["message"] = f"设备 {group_id} 特定点收集完成！"
                 return False
     
     from pynput import mouse
@@ -75,7 +77,7 @@ def collect_group_points_background(group_id):
             groups_data = {"common_points": [], "group_points": {}}
         groups_data["group_points"][group_id] = collecting_status["points"]
         collector.save_groups(groups_data["common_points"], groups_data["group_points"])
-        collecting_status["message"] = f"组 {group_id} 特定点已保存到文件"
+        collecting_status["message"] = f"设备 {group_id} 特定点已保存到文件"
     else:
         collecting_status["status"] = "error"
         collecting_status["message"] = f"收集的点数量不足，需要3个点，实际收集了{len(collecting_status['points'])}个点"
@@ -111,12 +113,12 @@ def start_collect_group():
     group_id = data.get('group_id', '')
     
     if not group_id:
-        return jsonify({"success": False, "message": "组ID不能为空"})
+        return jsonify({"success": False, "message": "设备ID不能为空"})
     
     collecting_thread = threading.Thread(target=collect_group_points_background, args=(group_id,))
     collecting_thread.start()
     
-    return jsonify({"success": True, "message": f"开始收集组 {group_id} 的特定点"})
+    return jsonify({"success": True, "message": f"开始收集设备 {group_id} 的特定点"})
 
 @app.route('/api/send', methods=['POST'])
 def send_message_api():
@@ -128,7 +130,7 @@ def send_message_api():
         return jsonify({"success": False, "message": "消息不能为空"})
     
     if not group_id:
-        return jsonify({"success": False, "message": "组ID不能为空"})
+        return jsonify({"success": False, "message": "设备ID不能为空"})
     
     try:
         send_message(message, group_id)
@@ -141,21 +143,21 @@ def get_groups():
     groups_data = collector.load_groups()
     if groups_data:
         return jsonify({"success": True, "data": groups_data})
-    return jsonify({"success": False, "message": "无法读取组数据文件"})
+    return jsonify({"success": False, "message": "无法读取设备数据文件"})
 
 @app.route('/api/groups/<group_id>', methods=['DELETE'])
 def delete_group(group_id):
     groups_data = collector.load_groups()
     if groups_data is None:
-        return jsonify({"success": False, "message": "无法读取组数据文件"})
+        return jsonify({"success": False, "message": "无法读取设备数据文件"})
     
     if group_id not in groups_data["group_points"]:
-        return jsonify({"success": False, "message": f"组 {group_id} 不存在"})
+        return jsonify({"success": False, "message": f"设备 {group_id} 不存在"})
     
     del groups_data["group_points"][group_id]
     collector.save_groups(groups_data["common_points"], groups_data["group_points"])
     
-    return jsonify({"success": True, "message": f"组 {group_id} 已删除"})
+    return jsonify({"success": True, "message": f"设备 {group_id} 已删除"})
 
 @app.route('/api/scripts/categories', methods=['GET'])
 def get_script_categories():
@@ -167,88 +169,234 @@ def get_script_categories():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
-@app.route('/api/batch/start', methods=['POST'])
-def start_batch_control():
-    global batch_control_thread, batch_control_running
-    
-    if batch_control_running:
-        return jsonify({"success": False, "message": "群控正在运行中"})
-    
-    data = request.json
-    category = data.get('category', '')
-    
-    if not category:
-        return jsonify({"success": False, "message": "话术类别不能为空"})
-    
+@app.route('/api/scripts/<category>', methods=['GET'])
+def get_scripts_by_category(category):
     try:
         with open('话术.json', 'r', encoding='utf-8') as f:
             scripts = json.load(f)
         
         if category not in scripts:
-            return jsonify({"success": False, "message": f"话术类别 {category} 不存在"})
+            return jsonify({"success": False, "message": f"类目 {category} 不存在"})
+        
+        return jsonify({"success": True, "scripts": scripts[category]})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/scripts/<category>', methods=['POST'])
+def add_script(category):
+    try:
+        data = request.json
+        script = data.get('script', '')
+        
+        if not script:
+            return jsonify({"success": False, "message": "话术内容不能为空"})
+        
+        with open('话术.json', 'r', encoding='utf-8') as f:
+            scripts = json.load(f)
+        
+        if category not in scripts:
+            scripts[category] = []
+        
+        scripts[category].append(script)
+        
+        with open('话术.json', 'w', encoding='utf-8') as f:
+            json.dump(scripts, f, ensure_ascii=False, indent=2)
+        
+        return jsonify({"success": True, "message": "话术添加成功"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/scripts/<category>', methods=['PUT'])
+def update_script(category):
+    try:
+        data = request.json
+        old_script = data.get('old_script', '')
+        new_script = data.get('new_script', '')
+        
+        if not old_script or not new_script:
+            return jsonify({"success": False, "message": "话术内容不能为空"})
+        
+        with open('话术.json', 'r', encoding='utf-8') as f:
+            scripts = json.load(f)
+        
+        if category not in scripts:
+            return jsonify({"success": False, "message": f"类目 {category} 不存在"})
+        
+        if old_script not in scripts[category]:
+            return jsonify({"success": False, "message": "原话术不存在"})
+        
+        index = scripts[category].index(old_script)
+        scripts[category][index] = new_script
+        
+        with open('话术.json', 'w', encoding='utf-8') as f:
+            json.dump(scripts, f, ensure_ascii=False, indent=2)
+        
+        return jsonify({"success": True, "message": "话术修改成功"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/scripts/<category>', methods=['DELETE'])
+def delete_script(category):
+    try:
+        data = request.json
+        script = data.get('script', '')
+        
+        if not script:
+            return jsonify({"success": False, "message": "话术内容不能为空"})
+        
+        with open('话术.json', 'r', encoding='utf-8') as f:
+            scripts = json.load(f)
+        
+        if category not in scripts:
+            return jsonify({"success": False, "message": f"类目 {category} 不存在"})
+        
+        if script not in scripts[category]:
+            return jsonify({"success": False, "message": "话术不存在"})
+        
+        scripts[category].remove(script)
+        
+        with open('话术.json', 'w', encoding='utf-8') as f:
+            json.dump(scripts, f, ensure_ascii=False, indent=2)
+        
+        return jsonify({"success": True, "message": "话术删除成功"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/batch/start', methods=['POST'])
+def start_batch_control():
+    global batch_control_thread, batch_control_running, keyboard_listener
+    
+    if batch_control_running:
+        return jsonify({"success": False, "message": "群控正在运行中"})
+    
+    data = request.json
+    probabilities = data.get('probabilities', {})
+    
+    if not probabilities:
+        return jsonify({"success": False, "message": "概率设置不能为空"})
+    
+    total_probability = sum(probabilities.values())
+    if total_probability <= 0:
+        return jsonify({"success": False, "message": "总概率必须大于0"})
+    
+    if total_probability > 1:
+        return jsonify({"success": False, "message": "总概率不能超过100%"})
+    
+    try:
+        with open('话术.json', 'r', encoding='utf-8') as f:
+            scripts = json.load(f)
+        
+        for category in probabilities.keys():
+            if category not in scripts:
+                return jsonify({"success": False, "message": f"话术类别 {category} 不存在"})
         
         batch_control_running = True
-        batch_control_thread = threading.Thread(target=batch_control_worker, args=(category,))
+        batch_control_thread = threading.Thread(target=batch_control_worker, args=(probabilities,))
         batch_control_thread.start()
         
-        return jsonify({"success": True, "message": f"开始群控，话术类别：{category}"})
+        return jsonify({"success": True, "message": f"开始群控，按ESC键可快速停止"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/click-all', methods=['POST'])
+def click_all_common_points():
+    try:
+        data = request.json
+        message = data.get('message', '')
+        
+        if not message:
+            return jsonify({"success": False, "message": "消息内容不能为空"})
+        
+        send_message_all(message)
+        return jsonify({"success": True, "message": "群发消息完成"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
 @app.route('/api/batch/stop', methods=['POST'])
 def stop_batch_control():
-    global batch_control_running
+    global batch_control_running, keyboard_listener
     
     if not batch_control_running:
         return jsonify({"success": False, "message": "群控未在运行"})
     
     batch_control_running = False
+    
+    if keyboard_listener:
+        keyboard_listener.stop()
+        keyboard_listener = None
+    
     return jsonify({"success": True, "message": "群控已停止"})
 
 @app.route('/api/batch/status', methods=['GET'])
 def get_batch_status():
     return jsonify(batch_control_status)
 
-def batch_control_worker(category):
-    global batch_control_status, batch_control_running
+def batch_control_worker(probabilities):
+    global batch_control_status, batch_control_running, keyboard_listener
+    
+    def on_press(key):
+        if key == keyboard.Key.esc:
+            global batch_control_running
+            batch_control_running = False
+            batch_control_status["status"] = "idle"
+            batch_control_status["message"] = "已按ESC键停止群控"
+            return False
+    
+    keyboard_listener = keyboard.Listener(on_press=on_press)
+    keyboard_listener.start()
     
     try:
         with open('话术.json', 'r', encoding='utf-8') as f:
             scripts = json.load(f)
         
-        messages = scripts.get(category, [])
-        if not messages:
-            batch_control_status["status"] = "error"
-            batch_control_status["message"] = f"话术类别 {category} 没有可用消息"
-            batch_control_running = False
-            return
+        for category in probabilities.keys():
+            if category not in scripts:
+                batch_control_status["status"] = "error"
+                batch_control_status["message"] = f"话术类别 {category} 不存在"
+                batch_control_running = False
+                return
         
         groups_data = collector.load_groups()
         if groups_data is None:
             batch_control_status["status"] = "error"
-            batch_control_status["message"] = "无法读取组数据文件"
+            batch_control_status["message"] = "无法读取设备数据文件"
             batch_control_running = False
             return
         
         group_ids = list(groups_data.get("group_points", {}).keys())
         if not group_ids:
             batch_control_status["status"] = "error"
-            batch_control_status["message"] = "没有可用的组"
+            batch_control_status["message"] = "没有可用的设备"
             batch_control_running = False
             return
         
         batch_control_status["status"] = "running"
-        batch_control_status["category"] = category
+        batch_control_status["category"] = ", ".join(probabilities.keys())
         batch_control_status["sent_count"] = 0
+        
+        def select_category_by_probability():
+            r = random.random()
+            cumulative = 0
+            for category, prob in probabilities.items():
+                cumulative += prob
+                if r <= cumulative:
+                    return category
+            return list(probabilities.keys())[0]
         
         while batch_control_running:
             for group_id in group_ids:
                 if not batch_control_running:
                     break
                 
+                selected_category = select_category_by_probability()
+                messages = scripts.get(selected_category, [])
+                
+                if not messages:
+                    continue
+                
                 message = random.choice(messages)
                 batch_control_status["current_group"] = group_id
-                batch_control_status["message"] = f"正在向组 {group_id} 发送消息：{message}"
+                batch_control_status["message"] = f"正在向设备 {group_id} 发送消息（{selected_category}）：{message}"
                 
                 try:
                     send_message(message, group_id)
@@ -256,7 +404,7 @@ def batch_control_worker(category):
                 except Exception as e:
                     batch_control_status["message"] = f"发送失败：{str(e)}"
                 
-                time.sleep(1)
+                time.sleep(2)
         
         batch_control_status["status"] = "idle"
         batch_control_status["message"] = "群控已停止"
@@ -266,6 +414,11 @@ def batch_control_worker(category):
         batch_control_status["status"] = "error"
         batch_control_status["message"] = f"群控出错：{str(e)}"
         batch_control_running = False
+    
+    finally:
+        if keyboard_listener:
+            keyboard_listener.stop()
+            keyboard_listener = None
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

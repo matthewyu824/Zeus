@@ -75,7 +75,7 @@ class PointCollector:
         return data
 
     def collect_common_points(self):
-        print("\n请收集公共点（点2、点3）...")
+        print("\n请收集公共点（6个点）...")
         print("点击鼠标左键来记录位置")
         
         self.common_points = []
@@ -85,7 +85,7 @@ class PointCollector:
                 self.common_points.append((x, y))
                 print(f"已收集第 {len(self.common_points)} 个公共点: ({x}, {y})")
                 
-                if len(self.common_points) >= 2:
+                if len(self.common_points) >= 6:
                     return False
         
         with mouse.Listener(on_click=on_click) as listener:
@@ -196,46 +196,96 @@ def send_message(message, group_id):
     print(f"\n发送消息: {message}")
     print(f"使用组 {group_id} 的标注点")
     
+    # x, y = group_specific[0]
+    # print(f"点击起始点（组{group_id} 点1）: ({x}, {y})")
+    # pyautogui.click(x, y)
+    # time.sleep(1)
+    
+    # x, y = common_points[0]
+    # print(f"点击输入框（公共点1）: ({x}, {y})")
+    # pyautogui.click(x, y)
+    # time.sleep(1)
+    
+
+    
+    # x, y = common_points[1]
+    # print(f"点击第2个位置（公共点2）: ({x}, {y})")
+    # pyautogui.click(x, y)
+    # time.sleep(1)
+    
     x, y = group_specific[0]
-    print(f"点击起始点（组{group_id} 点1）: ({x}, {y})")
+    print(f"点击第1个位置（组{group_id} 点1）: ({x}, {y})")
     pyautogui.click(x, y)
-    time.sleep(1)
-    
-    x, y = common_points[0]
-    print(f"点击输入框（公共点1）: ({x}, {y})")
-    pyautogui.click(x, y)
-    time.sleep(1)
-    
+    time.sleep(0.2)
+
     print(f"输入文字: {message}")
     pyperclip.copy(message)
     pyautogui.hotkey('ctrl', 'v')
-    time.sleep(1)
-    
-    x, y = common_points[1]
-    print(f"点击第2个位置（公共点2）: ({x}, {y})")
-    pyautogui.click(x, y)
-    time.sleep(1)
+    time.sleep(0.2)
     
     x, y = group_specific[1]
-    print(f"点击第3个位置（组{group_id} 点4）: ({x}, {y})")
+
+    print(f"点击第2个位置（组{group_id} 点2）: ({x}, {y})")
     pyautogui.click(x, y)
-    time.sleep(1)
-    
+    time.sleep(0.3)
+
     x, y = group_specific[2]
-    print(f"点击第4个位置（组{group_id} 点5）: ({x}, {y})")
+
+    print(f"点击第2个位置（组{group_id} 点2）: ({x}, {y})")
     pyautogui.click(x, y)
-    time.sleep(1)
+    time.sleep(0.1)
     
     print("\n消息发送完成！")
 
+def send_message_all(message):
+    collector = PointCollector()
+    
+    groups_data = collector.load_groups()
+    
+    if groups_data is None:
+        print("错误：无法读取组数据文件")
+        return
+    
+    common_points = groups_data.get("common_points", [])
+    
+    if len(common_points) < 3:
+        print("错误：需要至少3个公共点")
+        return
+    
+    print(f"\n开始群发消息...")
+    print(f"消息内容：{message}")
+    
+    x, y = common_points[0]
+    print(f"第一步：左键点击第1个公共点: ({x}, {y})")
+    pyautogui.click(x, y)
+    time.sleep(0.5)
+    
+    print(f"第二步：复制消息并粘贴到输入框")
+    pyperclip.copy(message)
+    pyautogui.hotkey('ctrl', 'v')
+    time.sleep(0.5)
+    
+    x, y = common_points[1]
+    print(f"第三步：点击第2个公共点: ({x}, {y})")
+    pyautogui.click(x, y)
+    time.sleep(0.5)
+    
+    x, y = common_points[2]
+    print(f"第四步：点击第3个公共点: ({x}, {y})")
+    pyautogui.click(x, y)
+    time.sleep(0.5)
+    
+    print("\n群发消息完成！")
+
 def main():
     print("请选择操作：")
-    print("1. 收集公共点（点2、点3）")
+    print("1. 收集公共点（6个点）")
     print("2. 收集组特定点（点1、点4、点5）")
     print("3. 发送消息（使用 send_message 函数）")
-    print("4. 查看所有组信息")
+    print("4. 点击所有公共点（使用 send_message_all 函数）")
+    print("5. 查看所有组信息")
     
-    choice = input("\n请输入选项 (1, 2, 3 或 4): ").strip()
+    choice = input("\n请输入选项 (1, 2, 3, 4 或 5): ").strip()
     
     collector = PointCollector()
     groups_data = collector.load_groups()
@@ -260,6 +310,9 @@ def main():
         send_message(message, group_id)
         
     elif choice == "4":
+        send_message_all()
+        
+    elif choice == "5":
         print("\n=== 组信息 ===")
         print(f"公共点数量: {len(groups_data['common_points'])}")
         for i, point in enumerate(groups_data['common_points'], 1):

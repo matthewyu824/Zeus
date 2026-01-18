@@ -258,12 +258,12 @@
         <div class="section">
             <div class="section-title">收集坐标点</div>
             <button id="collectCommonBtn" class="btn btn-primary" onclick="startCollectCommon()">
-                收集公共点（点2、点3）
+                收集公共点（6个点）
             </button>
             <div class="input-group">
-                <input type="text" id="groupIdInput" class="input-field" placeholder="输入组ID（如 group1, group2）">
+                <input type="text" id="groupIdInput" class="input-field" placeholder="输入设备ID（如 group1, group2）">
                 <button id="collectGroupBtn" class="btn btn-primary" onclick="startCollectGroup()">
-                    收集组特定点
+                    收集设备特定点
                 </button>
             </div>
             <div class="status-box">
@@ -276,35 +276,77 @@
             <div class="input-group">
                 <input type="text" id="messageInput" class="input-field" placeholder="请输入要发送的消息">
                 <select id="groupSelect" class="input-field" style="flex: 0.5;">
-                    <option value="">选择组</option>
+                    <option value="">选择设备</option>
                 </select>
                 <button id="sendBtn" class="btn btn-success" onclick="sendMessage()">
                     发送消息
                 </button>
             </div>
             <div class="status-box">
-                <div id="sendStatus" class="status-text">输入消息并选择组后点击发送</div>
+                <div id="sendStatus" class="status-text">输入消息并选择设备后点击发送</div>
             </div>
         </div>
 
         <div class="section">
-            <div class="section-title">已保存的组信息</div>
+            <div class="section-title">群发模式</div>
+            <div style="margin-bottom: 10px; color: #666; font-size: 14px;">
+                左键点击第1个公共点、复制消息并粘贴到输入框、点击第2个公共点、点击第3个公共点
+            </div>
+            <div class="input-group">
+                <input type="text" id="batchMessageInput" class="input-field" placeholder="输入要群发的消息">
+                <button id="clickAllBtn" class="btn btn-primary" onclick="clickAllCommonPoints()">
+                    群发消息
+                </button>
+            </div>
+            <div class="status-box">
+                <div id="clickAllStatus" class="status-text">输入消息后点击群发消息按钮</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">已保存的设备信息</div>
             <button class="btn btn-primary" onclick="loadGroups()">
-                刷新组列表
+                刷新设备列表
             </button>
             <div id="groupsDisplay" class="points-display">
                 <div class="point-item">
-                    <span class="point-label">暂无组数据</span>
+                    <span class="point-label">暂无设备数据</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">话术管理</div>
+            <div class="input-group">
+                <select id="scriptCategorySelect" class="input-field" onchange="loadScriptsByCategory()">
+                    <option value="">选择类目</option>
+                </select>
+                <input type="text" id="newScriptInput" class="input-field" placeholder="输入新话术">
+                <button id="addScriptBtn" class="btn btn-primary" onclick="addScript()">
+                    添加话术
+                </button>
+            </div>
+            <div id="scriptsDisplay" class="points-display" style="margin-top: 10px;">
+                <div class="point-item">
+                    <span class="point-label">请先选择类目</span>
                 </div>
             </div>
         </div>
 
         <div class="section">
             <div class="section-title">群控功能</div>
+            <div style="margin-bottom: 15px;">
+                <strong>类目概率设置：</strong>
+                <div id="categoryProbabilitySettings" style="margin-top: 10px;">
+                    <div class="point-item">
+                        <span class="point-label">正在加载类目...</span>
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <span id="totalProbability" style="color: #666; font-size: 14px;">总概率：0%</span>
+                </div>
+            </div>
             <div class="input-group">
-                <select id="scriptCategorySelect" class="input-field">
-                    <option value="">选择话术类别</option>
-                </select>
                 <button id="startBatchBtn" class="btn btn-success" onclick="startBatchControl()">
                     开始群控
                 </button>
@@ -312,8 +354,11 @@
                     停止群控
                 </button>
             </div>
+            <div style="margin-top: 10px; color: #666; font-size: 14px;">
+                ⚠️ 提示：群控运行时按 <strong>ESC键</strong> 可快速停止
+            </div>
             <div class="status-box">
-                <div id="batchStatus" class="status-text">选择话术类别后点击开始群控</div>
+                <div id="batchStatus" class="status-text">设置类目概率后点击开始群控</div>
             </div>
             <div class="points-display" style="margin-top: 10px;">
                 <div class="point-item">
@@ -321,7 +366,7 @@
                     <span class="point-coords" id="sentCount">0</span>
                 </div>
                 <div class="point-item">
-                    <span class="point-label">当前组：</span>
+                    <span class="point-label">当前设备：</span>
                     <span class="point-coords" id="currentGroup">-</span>
                 </div>
                 <div class="point-item">
@@ -377,7 +422,7 @@
             const groupId = groupIdInput.value.trim();
             
             if (!groupId) {
-                collectStatus.textContent = '请输入组ID';
+                collectStatus.textContent = '请输入设备ID';
                 collectStatus.className = 'status-text error';
                 return;
             }
@@ -465,7 +510,7 @@
             }
             
             if (!groupId) {
-                sendStatus.textContent = '请选择组';
+                sendStatus.textContent = '请选择设备';
                 sendStatus.className = 'status-text error';
                 return;
             }
@@ -524,7 +569,7 @@
                     }
                     
                     if (Object.keys(groupPoints).length > 0) {
-                        html += '<strong>组列表：</strong><br>';
+                        html += '<strong>设备列表：</strong><br>';
                         html += '<div class="group-list">';
                         
                         for (const [groupId, points] of Object.entries(groupPoints)) {
@@ -541,30 +586,30 @@
                     }
                     
                     if (!html) {
-                        html = '<div class="point-item"><span class="point-label">暂无组数据</span></div>';
+                        html = '<div class="point-item"><span class="point-label">暂无设备数据</span></div>';
                     }
                     
                     groupsDisplay.innerHTML = html;
                     
-                    groupSelect.innerHTML = '<option value="">选择组</option>';
+                    groupSelect.innerHTML = '<option value="">选择设备</option>';
                     for (const groupId of Object.keys(groupPoints)) {
                         groupSelect.innerHTML += `<option value="${groupId}">${groupId}</option>`;
                     }
                 } else {
                     groupsDisplay.innerHTML = `
                         <div class="point-item">
-                            <span class="point-label">暂无组数据</span>
+                            <span class="point-label">暂无设备数据</span>
                         </div>
                     `;
-                    groupSelect.innerHTML = '<option value="">选择组</option>';
+                    groupSelect.innerHTML = '<option value="">选择设备</option>';
                 }
             } catch (error) {
-                console.error('加载组数据失败:', error);
+                console.error('加载设备数据失败:', error);
             }
         }
 
         async function deleteGroup(groupId) {
-            if (!confirm(`确定要删除组 ${groupId} 吗？`)) {
+            if (!confirm(`确定要删除设备 ${groupId} 吗？`)) {
                 return;
             }
             
@@ -590,28 +635,290 @@
                 const data = await response.json();
                 
                 const scriptCategorySelect = document.getElementById('scriptCategorySelect');
+                const categoryProbabilitySettings = document.getElementById('categoryProbabilitySettings');
                 
                 if (data.success && data.categories) {
-                    scriptCategorySelect.innerHTML = '<option value="">选择话术类别</option>';
+                    scriptCategorySelect.innerHTML = '<option value="">选择类目</option>';
                     data.categories.forEach(category => {
                         scriptCategorySelect.innerHTML += `<option value="${category}">${category}</option>`;
                     });
+                    
+                    let html = '';
+                    data.categories.forEach(category => {
+                        html += `
+                            <div class="point-item">
+                                <span class="point-label">${category}</span>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="number" 
+                                           id="prob_${category}" 
+                                           class="input-field" 
+                                           style="width: 80px; padding: 8px;" 
+                                           min="0" 
+                                           max="1" 
+                                           step="0.1" 
+                                           value="0"
+                                           onchange="updateTotalProbability()">
+                                    <span style="color: #666;">概率</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    categoryProbabilitySettings.innerHTML = html;
+                    updateTotalProbability();
                 }
             } catch (error) {
                 console.error('加载话术类别失败:', error);
             }
         }
 
-        async function startBatchControl() {
+        async function loadScriptsByCategory() {
             const scriptCategorySelect = document.getElementById('scriptCategorySelect');
+            const category = scriptCategorySelect.value;
+            const scriptsDisplay = document.getElementById('scriptsDisplay');
+            
+            if (!category) {
+                scriptsDisplay.innerHTML = `
+                    <div class="point-item">
+                        <span class="point-label">请先选择类目</span>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`);
+                const data = await response.json();
+                
+                if (data.success && data.scripts) {
+                    let html = '';
+                    data.scripts.forEach((script, index) => {
+                        html += `
+                            <div class="point-item" id="script_${index}">
+                                <span class="point-label" style="flex: 1;">${script}</span>
+                                <div style="display: flex; gap: 5px;">
+                                    <button class="btn btn-primary" 
+                                            style="padding: 5px 10px; font-size: 12px;" 
+                                            onclick="editScript(${index})">
+                                        编辑
+                                    </button>
+                                    <button class="btn btn-danger" 
+                                            style="padding: 5px 10px; font-size: 12px;" 
+                                            onclick="deleteScript(${index})">
+                                        删除
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    scriptsDisplay.innerHTML = html;
+                } else {
+                    scriptsDisplay.innerHTML = `
+                        <div class="point-item">
+                            <span class="point-label">${data.message}</span>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('加载话术失败:', error);
+                scriptsDisplay.innerHTML = `
+                    <div class="point-item">
+                        <span class="point-label">加载失败：${error.message}</span>
+                    </div>
+                `;
+            }
+        }
+
+        async function addScript() {
+            const scriptCategorySelect = document.getElementById('scriptCategorySelect');
+            const newScriptInput = document.getElementById('newScriptInput');
+            const category = scriptCategorySelect.value;
+            const script = newScriptInput.value.trim();
+            
+            if (!category) {
+                alert('请先选择类目');
+                return;
+            }
+            
+            if (!script) {
+                alert('请输入话术内容');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ script: script })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    newScriptInput.value = '';
+                    loadScriptsByCategory();
+                } else {
+                    alert('添加失败：' + data.message);
+                }
+            } catch (error) {
+                alert('添加失败：' + error.message);
+            }
+        }
+
+        async function editScript(index) {
+            const scriptCategorySelect = document.getElementById('scriptCategorySelect');
+            const category = scriptCategorySelect.value;
+            const scriptsDisplay = document.getElementById('scriptsDisplay');
+            const scriptElement = document.getElementById(`script_${index}`);
+            const oldScript = scriptElement.querySelector('.point-label').textContent;
+            
+            const newScript = prompt('编辑话术', oldScript);
+            
+            if (newScript === null || newScript.trim() === '') {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ old_script: oldScript, new_script: newScript.trim() })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadScriptsByCategory();
+                } else {
+                    alert('修改失败：' + data.message);
+                }
+            } catch (error) {
+                alert('修改失败：' + error.message);
+            }
+        }
+
+        async function deleteScript(index) {
+            const scriptCategorySelect = document.getElementById('scriptCategorySelect');
+            const category = scriptCategorySelect.value;
+            const scriptsDisplay = document.getElementById('scriptsDisplay');
+            const scriptElement = document.getElementById(`script_${index}`);
+            const script = scriptElement.querySelector('.point-label').textContent;
+            
+            if (!confirm(`确定要删除话术"${script}"吗？`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ script: script })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadScriptsByCategory();
+                } else {
+                    alert('删除失败：' + data.message);
+                }
+            } catch (error) {
+                alert('删除失败：' + error.message);
+            }
+        }
+
+        async function clickAllCommonPoints() {
+            const clickAllBtn = document.getElementById('clickAllBtn');
+            const clickAllStatus = document.getElementById('clickAllStatus');
+            const batchMessageInput = document.getElementById('batchMessageInput');
+            
+            const message = batchMessageInput.value.trim();
+            
+            if (!message) {
+                alert('请输入要群发的消息');
+                return;
+            }
+            
+            clickAllBtn.disabled = true;
+            clickAllStatus.innerHTML = '<span class="loading"></span>正在群发消息...';
+            
+            try {
+                const response = await fetch('/api/click-all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    clickAllStatus.textContent = data.message;
+                    clickAllStatus.className = 'status-text success';
+                } else {
+                    clickAllStatus.textContent = data.message;
+                    clickAllStatus.className = 'status-text error';
+                }
+            } catch (error) {
+                clickAllStatus.textContent = '群发失败：' + error.message;
+                clickAllStatus.className = 'status-text error';
+            }
+            
+            clickAllBtn.disabled = false;
+        }
+
+        function updateTotalProbability() {
+            const categoryProbabilitySettings = document.getElementById('categoryProbabilitySettings');
+            const inputs = categoryProbabilitySettings.querySelectorAll('input[type="number"]');
+            let total = 0;
+            
+            inputs.forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            
+            const totalProbability = document.getElementById('totalProbability');
+            totalProbability.textContent = `总概率：${(total * 100).toFixed(0)}%`;
+            
+            if (total > 1) {
+                totalProbability.style.color = '#dc3545';
+            } else if (total < 1) {
+                totalProbability.style.color = '#ffc107';
+            } else {
+                totalProbability.style.color = '#28a745';
+            }
+        }
+
+        function getCategoryProbabilities() {
+            const categoryProbabilitySettings = document.getElementById('categoryProbabilitySettings');
+            const inputs = categoryProbabilitySettings.querySelectorAll('input[type="number"]');
+            const probabilities = {};
+            
+            inputs.forEach(input => {
+                const category = input.id.replace('prob_', '');
+                probabilities[category] = parseFloat(input.value) || 0;
+            });
+            
+            return probabilities;
+        }
+
+        async function startBatchControl() {
             const startBatchBtn = document.getElementById('startBatchBtn');
             const stopBatchBtn = document.getElementById('stopBatchBtn');
             const batchStatus = document.getElementById('batchStatus');
             
-            const category = scriptCategorySelect.value;
+            const probabilities = getCategoryProbabilities();
+            const totalProbability = Object.values(probabilities).reduce((a, b) => a + b, 0);
             
-            if (!category) {
-                batchStatus.textContent = '请选择话术类别';
+            if (totalProbability <= 0) {
+                batchStatus.textContent = '请至少设置一个类目的概率';
+                batchStatus.className = 'status-text error';
+                return;
+            }
+            
+            if (totalProbability > 1) {
+                batchStatus.textContent = '总概率不能超过100%';
                 batchStatus.className = 'status-text error';
                 return;
             }
@@ -626,7 +933,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ category: category })
+                    body: JSON.stringify({ probabilities: probabilities })
                 });
                 const data = await response.json();
                 
@@ -724,6 +1031,17 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadGroups();
             loadScriptCategories();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const startBatchBtn = document.getElementById('startBatchBtn');
+                const stopBatchBtn = document.getElementById('stopBatchBtn');
+                
+                if (startBatchBtn.disabled && !stopBatchBtn.disabled) {
+                    stopBatchControl();
+                }
+            }
         });
 
         document.getElementById('messageInput').addEventListener('keypress', function(e) {
