@@ -375,6 +375,41 @@
                 </div>
             </div>
         </div>
+
+        <div class="section">
+            <div class="section-title">定期发送</div>
+            <div class="input-group">
+                <input type="text" id="scheduledMessageInput" class="input-field" placeholder="输入要定期发送的消息">
+                <select id="scheduledGroupSelect" class="input-field" style="flex: 0.5;">
+                    <option value="">选择设备</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <input type="number" id="intervalInput" class="input-field" placeholder="时间间隔（秒）" min="1" value="60">
+                <button id="startScheduledBtn" class="btn btn-success" onclick="startScheduledSend()">
+                    开始定期发送
+                </button>
+                <button id="stopScheduledBtn" class="btn btn-danger" onclick="stopScheduledSend()" disabled>
+                    停止定期发送
+                </button>
+            </div>
+            <div style="margin-top: 10px; color: #666; font-size: 14px;">
+                ⚠️ 提示：定期发送运行时按 <strong>ESC键</strong> 可快速停止
+            </div>
+            <div class="status-box">
+                <div id="scheduledStatus" class="status-text">输入消息、选择设备并设置时间间隔后点击开始</div>
+            </div>
+            <div class="points-display" style="margin-top: 10px;">
+                <div class="point-item">
+                    <span class="point-label">已发送消息数：</span>
+                    <span class="point-coords" id="scheduledSentCount">0</span>
+                </div>
+                <div class="point-item">
+                    <span class="point-label">下次发送时间：</span>
+                    <span class="point-coords" id="nextSendTime">-</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -550,6 +585,7 @@
                 
                 const groupsDisplay = document.getElementById('groupsDisplay');
                 const groupSelect = document.getElementById('groupSelect');
+                const scheduledGroupSelect = document.getElementById('scheduledGroupSelect');
                 
                 if (data.success && data.data) {
                     const commonPoints = data.data.common_points || [];
@@ -592,8 +628,10 @@
                     groupsDisplay.innerHTML = html;
                     
                     groupSelect.innerHTML = '<option value="">选择设备</option>';
+                    scheduledGroupSelect.innerHTML = '<option value="">选择设备</option>';
                     for (const groupId of Object.keys(groupPoints)) {
                         groupSelect.innerHTML += `<option value="${groupId}">${groupId}</option>`;
+                        scheduledGroupSelect.innerHTML += `<option value="${groupId}">${groupId}</option>`;
                     }
                 } else {
                     groupsDisplay.innerHTML = `
@@ -602,6 +640,7 @@
                         </div>
                     `;
                     groupSelect.innerHTML = '<option value="">选择设备</option>';
+                    scheduledGroupSelect.innerHTML = '<option value="">选择设备</option>';
                 }
             } catch (error) {
                 console.error('加载设备数据失败:', error);
@@ -985,6 +1024,151 @@
             }
         }
 
+        let scheduledStatusInterval = null;
+
+        async function startScheduledSend() {
+            const startScheduledBtn = document.getElementById('startScheduledBtn');
+            const stopScheduledBtn = document.getElementById('stopScheduledBtn');
+            const scheduledStatus = document.getElementById('scheduledStatus');
+            const scheduledMessageInput = document.getElementById('scheduledMessageInput');
+            const scheduledGroupSelect = document.getElementById('scheduledGroupSelect');
+            const intervalInput = document.getElementById('intervalInput');
+            
+            const message = scheduledMessageInput.value.trim();
+            const groupId = scheduledGroupSelect.value;
+            const interval = parseInt(intervalInput.value);
+            
+            if (!message) {
+                scheduledStatus.textContent = '请输入要定期发送的消息';
+                scheduledStatus.className = 'status-text error';
+                return;
+            }
+            
+            if (!groupId) {
+                scheduledStatus.textContent = '请选择设备';
+                scheduledStatus.className = 'status-text error';
+                return;
+            }
+            
+            if (!interval || interval < 1) {
+                scheduledStatus.textContent = '请输入有效的时间间隔（至少1秒）';
+                scheduledStatus.className = 'status-text error';
+                return;
+            }
+            
+            startScheduledBtn.disabled = true;
+            stopScheduledBtn.disabled = false;
+            scheduledStatus.innerHTML = '<span class="loading"></span>正在启动定期发送...';
+            
+            try {
+                const response = await fetch('/api/scheduled/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message, group_id: groupId, interval: interval })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    scheduledStatus.textContent = data.message;
+                    scheduledStatus.className = 'status-text success';
+                    startScheduledStatusPolling();
+                } else {
+                    scheduledStatus.textContent = data.message;
+                    scheduledStatus.className = 'status-text error';
+                    startScheduledBtn.disabled = false;
+                    stopScheduledBtn.disabled = true;
+                }
+            } catch (error) {
+                scheduledStatus.textContent = '启动失败：' + error.message;
+                scheduledStatus.className = 'status-text error';
+                startScheduledBtn.disabled = false;
+                stopScheduledBtn.disabled = true;
+            }
+        }
+
+        async function stopScheduledSend() {
+            const startScheduledBtn = document.getElementById('startScheduledBtn');
+            const stopScheduledBtn = document.getElementById('stopScheduledBtn');
+            const scheduledStatus = document.getElementById('scheduledStatus');
+            
+            stopScheduledBtn.disabled = true;
+            scheduledStatus.innerHTML = '<span class="loading"></span>正在停止定期发送...';
+            
+            try {
+                const response = await fetch('/api/scheduled/stop', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    scheduledStatus.textContent = data.message;
+                    scheduledStatus.className = 'status-text success';
+                    startScheduledBtn.disabled = false;
+                } else {
+                    scheduledStatus.textContent = data.message;
+                    scheduledStatus.className = 'status-text error';
+                    stopScheduledBtn.disabled = false;
+                }
+            } catch (error) {
+                scheduledStatus.textContent = '停止失败：' + error.message;
+                scheduledStatus.className = 'status-text error';
+                stopScheduledBtn.disabled = false;
+            }
+        }
+
+        function startScheduledStatusPolling() {
+            if (scheduledStatusInterval) {
+                clearInterval(scheduledStatusInterval);
+            }
+            
+            scheduledStatusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/scheduled/status');
+                    const data = await response.json();
+                    
+                    const scheduledStatus = document.getElementById('scheduledStatus');
+                    const startScheduledBtn = document.getElementById('startScheduledBtn');
+                    const stopScheduledBtn = document.getElementById('stopScheduledBtn');
+                    const scheduledSentCount = document.getElementById('scheduledSentCount');
+                    const nextSendTime = document.getElementById('nextSendTime');
+                    
+                    scheduledStatus.textContent = data.message;
+                    scheduledSentCount.textContent = data.sent_count || 0;
+                    
+                    if (data.next_send_time) {
+                        const nextTime = new Date(data.next_send_time);
+                        const now = new Date();
+                        const diff = Math.max(0, Math.floor((nextTime - now) / 1000));
+                        const minutes = Math.floor(diff / 60);
+                        const seconds = diff % 60;
+                        nextSendTime.textContent = `${minutes}分${seconds}秒`;
+                    } else {
+                        nextSendTime.textContent = '-';
+                    }
+                    
+                    if (data.status === 'running') {
+                        scheduledStatus.className = 'status-text';
+                        startScheduledBtn.disabled = true;
+                        stopScheduledBtn.disabled = false;
+                    } else if (data.status === 'idle') {
+                        scheduledStatus.className = 'status-text success';
+                        startScheduledBtn.disabled = false;
+                        stopScheduledBtn.disabled = true;
+                        clearInterval(scheduledStatusInterval);
+                    } else if (data.status === 'error') {
+                        scheduledStatus.className = 'status-text error';
+                        startScheduledBtn.disabled = false;
+                        stopScheduledBtn.disabled = true;
+                        clearInterval(scheduledStatusInterval);
+                    }
+                } catch (error) {
+                    console.error('获取定期发送状态失败:', error);
+                }
+            }, 500);
+        }
+
         function startBatchStatusPolling() {
             if (batchStatusInterval) {
                 clearInterval(batchStatusInterval);
@@ -1040,6 +1224,13 @@
                 
                 if (startBatchBtn.disabled && !stopBatchBtn.disabled) {
                     stopBatchControl();
+                }
+                
+                const startScheduledBtn = document.getElementById('startScheduledBtn');
+                const stopScheduledBtn = document.getElementById('stopScheduledBtn');
+                
+                if (startScheduledBtn.disabled && !stopScheduledBtn.disabled) {
+                    stopScheduledSend();
                 }
             }
         });

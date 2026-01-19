@@ -15,7 +15,27 @@ collecting_status = {"status": "idle", "type": "", "points": [], "message": "", 
 batch_control_status = {"status": "idle", "message": "", "category": "", "current_group": "", "sent_count": 0}
 batch_control_thread = None
 batch_control_running = False
-keyboard_listener = None
+
+scheduled_send_status = {"status": "idle", "message": "", "group_id": "", "sent_count": 0, "next_send_time": None}
+scheduled_send_thread = None
+scheduled_send_running = False
+
+global_keyboard_listener = None
+
+def on_global_key_press(key):
+    if key == keyboard.Key.esc:
+        global batch_control_running, scheduled_send_running
+        
+        if batch_control_running:
+            batch_control_running = False
+            batch_control_status["status"] = "idle"
+            batch_control_status["message"] = "已按ESC键停止群控"
+        
+        if scheduled_send_running:
+            scheduled_send_running = False
+            scheduled_send_status["status"] = "idle"
+            scheduled_send_status["message"] = "已按ESC键停止定期发送"
+            scheduled_send_status["next_send_time"] = None
 
 def collect_common_points_background():
     global collecting_status
@@ -314,16 +334,12 @@ def click_all_common_points():
 
 @app.route('/api/batch/stop', methods=['POST'])
 def stop_batch_control():
-    global batch_control_running, keyboard_listener
+    global batch_control_running
     
     if not batch_control_running:
         return jsonify({"success": False, "message": "群控未在运行"})
     
     batch_control_running = False
-    
-    if keyboard_listener:
-        keyboard_listener.stop()
-        keyboard_listener = None
     
     return jsonify({"success": True, "message": "群控已停止"})
 
@@ -332,18 +348,11 @@ def get_batch_status():
     return jsonify(batch_control_status)
 
 def batch_control_worker(probabilities):
-    global batch_control_status, batch_control_running, keyboard_listener
+    global batch_control_status, batch_control_running, global_keyboard_listener
     
-    def on_press(key):
-        if key == keyboard.Key.esc:
-            global batch_control_running
-            batch_control_running = False
-            batch_control_status["status"] = "idle"
-            batch_control_status["message"] = "已按ESC键停止群控"
-            return False
-    
-    keyboard_listener = keyboard.Listener(on_press=on_press)
-    keyboard_listener.start()
+    if global_keyboard_listener is None:
+        global_keyboard_listener = keyboard.Listener(on_press=on_global_key_press)
+        global_keyboard_listener.start()
     
     try:
         with open('话术.json', 'r', encoding='utf-8') as f:
@@ -414,11 +423,100 @@ def batch_control_worker(probabilities):
         batch_control_status["status"] = "error"
         batch_control_status["message"] = f"群控出错：{str(e)}"
         batch_control_running = False
+
+@app.route('/api/scheduled/start', methods=['POST'])
+def start_scheduled_send():
+    global scheduled_send_thread, scheduled_send_running, global_keyboard_listener
     
-    finally:
-        if keyboard_listener:
-            keyboard_listener.stop()
-            keyboard_listener = None
+    if scheduled_send_running:
+        return jsonify({"success": False, "message": "定期发送正在运行中"})
+    
+    data = request.json
+    message = data.get('message', '')
+    group_id = data.get('group_id', '')
+    interval = data.get('interval', 60)
+    
+    if not message:
+        return jsonify({"success": False, "message": "消息内容不能为空"})
+    
+    if not group_id:
+        return jsonify({"success": False, "message": "设备ID不能为空"})
+    
+    if interval < 1:
+        return jsonify({"success": False, "message": "时间间隔必须至少为1秒"})
+    
+    try:
+        groups_data = collector.load_groups()
+        if groups_data is None:
+            return jsonify({"success": False, "message": "无法读取设备数据文件"})
+        
+        if group_id not in groups_data.get("group_points", {}):
+            return jsonify({"success": False, "message": f"设备 {group_id} 不存在"})
+        
+        scheduled_send_running = True
+        scheduled_send_thread = threading.Thread(target=scheduled_send_worker, args=(message, group_id, interval))
+        scheduled_send_thread.start()
+        
+        if global_keyboard_listener is None:
+            global_keyboard_listener = keyboard.Listener(on_press=on_global_key_press)
+            global_keyboard_listener.start()
+        
+        return jsonify({"success": True, "message": f"开始定期发送，按ESC键可快速停止"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/scheduled/stop', methods=['POST'])
+def stop_scheduled_send():
+    global scheduled_send_running
+    
+    if not scheduled_send_running:
+        return jsonify({"success": False, "message": "定期发送未在运行"})
+    
+    scheduled_send_running = False
+    
+    return jsonify({"success": True, "message": "定期发送已停止"})
+
+@app.route('/api/scheduled/status', methods=['GET'])
+def get_scheduled_send_status():
+    return jsonify(scheduled_send_status)
+
+def scheduled_send_worker(message, group_id, interval):
+    global scheduled_send_status, scheduled_send_running
+    
+    try:
+        scheduled_send_status["status"] = "running"
+        scheduled_send_status["group_id"] = group_id
+        scheduled_send_status["sent_count"] = 0
+        scheduled_send_status["message"] = f"开始定期发送消息到设备 {group_id}，间隔 {interval} 秒"
+        
+        while scheduled_send_running:
+            next_send_time = time.time() + interval
+            scheduled_send_status["next_send_time"] = next_send_time
+            
+            while scheduled_send_running and time.time() < next_send_time:
+                time.sleep(0.1)
+            
+            if not scheduled_send_running:
+                break
+            
+            scheduled_send_status["message"] = f"正在向设备 {group_id} 发送消息：{message}"
+            
+            try:
+                send_message(message, group_id)
+                scheduled_send_status["sent_count"] += 1
+                scheduled_send_status["message"] = f"消息已发送到设备 {group_id}，共发送 {scheduled_send_status['sent_count']} 次"
+            except Exception as e:
+                scheduled_send_status["message"] = f"发送失败：{str(e)}"
+        
+        scheduled_send_status["status"] = "idle"
+        scheduled_send_status["message"] = "定期发送已停止"
+        scheduled_send_status["next_send_time"] = None
+        scheduled_send_running = False
+        
+    except Exception as e:
+        scheduled_send_status["status"] = "error"
+        scheduled_send_status["message"] = f"定期发送出错：{str(e)}"
+        scheduled_send_running = False
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

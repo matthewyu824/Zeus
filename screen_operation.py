@@ -216,12 +216,12 @@ def send_message(message, group_id):
     x, y = group_specific[0]
     print(f"点击第1个位置（组{group_id} 点1）: ({x}, {y})")
     pyautogui.click(x, y)
-    time.sleep(0.2)
+    time.sleep(0.3)
 
     print(f"输入文字: {message}")
     pyperclip.copy(message)
     pyautogui.hotkey('ctrl', 'v')
-    time.sleep(0.2)
+    time.sleep(0.3)
     
     x, y = group_specific[1]
 
