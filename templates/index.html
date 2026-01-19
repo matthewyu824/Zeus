@@ -13,60 +13,150 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            overflow: auto;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
             padding: 20px;
+            overflow-y: auto;
         }
 
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
-            max-width: 700px;
-            width: 100%;
-        }
-
-        h1 {
+        .logo {
             text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-            font-size: 28px;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-
-        .section-title {
-            font-size: 18px;
+        .logo h1 {
+            color: #fff;
+            font-size: 20px;
             font-weight: 600;
-            color: #555;
-            margin-bottom: 15px;
+        }
+
+        .logo .icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
             display: flex;
             align-items: center;
+            gap: 12px;
         }
 
-        .section-title::before {
-            content: '';
-            width: 4px;
-            height: 20px;
-            background: #667eea;
-            margin-right: 10px;
-            border-radius: 2px;
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .nav-item .icon {
+            font-size: 18px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-header {
+            margin-bottom: 25px;
+        }
+
+        .section-header h2 {
+            color: #fff;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .section-header p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title .icon {
+            font-size: 20px;
         }
 
         .btn {
             padding: 12px 24px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 500;
@@ -75,99 +165,120 @@
         }
 
         .btn-primary {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
 
         .btn-primary:hover {
-            background: #5568d3;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
         .btn-primary:disabled {
-            background: #ccc;
+            background: rgba(255, 255, 255, 0.1);
             cursor: not-allowed;
             transform: none;
         }
 
         .btn-success {
-            background: #28a745;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
             color: white;
         }
 
         .btn-success:hover {
-            background: #218838;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+            box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+        }
+
+        .btn-success:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: not-allowed;
+            transform: none;
         }
 
         .btn-danger {
-            background: #dc3545;
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
             color: white;
         }
 
         .btn-danger:hover {
-            background: #c82333;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+            box-shadow: 0 6px 20px rgba(235, 51, 73, 0.4);
+        }
+
+        .btn-danger:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            cursor: not-allowed;
+            transform: none;
         }
 
         .input-group {
             display: flex;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 12px;
+            margin-top: 15px;
         }
 
         .input-field {
             flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 14px;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.4);
         }
 
         .input-field:focus {
             outline: none;
             border-color: #667eea;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .input-field option {
+            background: #1a1a2e;
+            color: #fff;
         }
 
         .status-box {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 15px;
             min-height: 60px;
         }
 
         .status-text {
-            color: #666;
+            color: rgba(255, 255, 255, 0.7);
             font-size: 14px;
             line-height: 1.6;
         }
 
         .status-text.success {
-            color: #28a745;
+            color: #38ef7d;
         }
 
         .status-text.error {
-            color: #dc3545;
+            color: #f45c43;
         }
 
         .points-display {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 15px;
         }
 
         .point-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .point-item:last-child {
@@ -176,22 +287,23 @@
 
         .point-label {
             font-weight: 500;
-            color: #555;
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .point-coords {
             color: #667eea;
             font-family: monospace;
+            font-size: 13px;
         }
 
         .loading {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid #667eea;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s linear infinite;
             margin-right: 10px;
             vertical-align: middle;
         }
@@ -209,204 +321,465 @@
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 15px;
         }
 
         .group-item {
-            background: white;
-            padding: 10px 15px;
-            border-radius: 6px;
-            border: 1px solid #e0e0e0;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .group-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(102, 126, 234, 0.3);
         }
 
         .group-name {
             font-weight: 500;
-            color: #333;
+            color: #fff;
         }
 
         .group-points-count {
-            color: #999;
+            color: rgba(255, 255, 255, 0.5);
             font-size: 12px;
         }
 
         .delete-group-btn {
-            background: #dc3545;
-            color: white;
+            background: rgba(235, 51, 73, 0.2);
+            color: #f45c43;
             border: none;
-            border-radius: 4px;
-            width: 24px;
-            height: 24px;
+            border-radius: 6px;
+            width: 26px;
+            height: 26px;
             cursor: pointer;
             font-size: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease;
         }
 
         .delete-group-btn:hover {
-            background: #c82333;
+            background: #f45c43;
+            color: #fff;
+        }
+
+        .info-text {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            margin-top: 10px;
+            line-height: 1.6;
+        }
+
+        .info-text strong {
+            color: #667eea;
+        }
+
+        .script-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .script-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(102, 126, 234, 0.2);
+        }
+
+        .script-text {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .delete-script-btn {
+            background: rgba(235, 51, 73, 0.2);
+            color: #f45c43;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-script-btn:hover {
+            background: #f45c43;
+            color: #fff;
+        }
+
+        .probability-input {
+            width: 80px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .probability-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .probability-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .probability-row:last-child {
+            border-bottom: none;
+        }
+
+        .probability-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            color: #667eea;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.5);
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🖥️ 屏幕操作控制面板</h1>
-
-        <div class="section">
-            <div class="section-title">收集坐标点</div>
-            <button id="collectCommonBtn" class="btn btn-primary" onclick="startCollectCommon()">
-                收集公共点（6个点）
-            </button>
-            <div class="input-group">
-                <input type="text" id="groupIdInput" class="input-field" placeholder="输入设备ID（如 group1, group2）">
-                <button id="collectGroupBtn" class="btn btn-primary" onclick="startCollectGroup()">
-                    收集设备特定点
-                </button>
+    <div class="sidebar">
+        <div class="logo">
+            <div class="icon">🖥️</div>
+            <h1>屏幕操作控制面板</h1>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-item active" data-section="collect">
+                <span class="icon">📍</span>
+                <span>坐标收集</span>
             </div>
-            <div class="status-box">
-                <div id="collectStatus" class="status-text">点击按钮开始收集坐标点</div>
+            <div class="nav-item" data-section="send">
+                <span class="icon">💬</span>
+                <span>发送消息</span>
+            </div>
+            <div class="nav-item" data-section="batch">
+                <span class="icon">📢</span>
+                <span>群发模式</span>
+            </div>
+            <div class="nav-item" data-section="devices">
+                <span class="icon">📱</span>
+                <span>设备管理</span>
+            </div>
+            <div class="nav-item" data-section="scripts">
+                <span class="icon">📝</span>
+                <span>话术管理</span>
+            </div>
+            <div class="nav-item" data-section="batch-control">
+                <span class="icon">🎯</span>
+                <span>群控功能</span>
+            </div>
+            <div class="nav-item" data-section="scheduled">
+                <span class="icon">⏰</span>
+                <span>定期发送</span>
             </div>
         </div>
+    </div>
 
-        <div class="section">
-            <div class="section-title">发送消息</div>
-            <div class="input-group">
-                <input type="text" id="messageInput" class="input-field" placeholder="请输入要发送的消息">
-                <select id="groupSelect" class="input-field" style="flex: 0.5;">
-                    <option value="">选择设备</option>
-                </select>
-                <button id="sendBtn" class="btn btn-success" onclick="sendMessage()">
-                    发送消息
+    <div class="main-content">
+        <div id="collect" class="content-section active">
+            <div class="section-header">
+                <h2>📍 坐标收集</h2>
+                <p>收集屏幕上的坐标点，用于后续操作</p>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">🎯</span>
+                    <span>收集公共点</span>
+                </div>
+                <button id="collectCommonBtn" class="btn btn-primary" onclick="startCollectCommon()">
+                    收集公共点（6个点）
                 </button>
+                <div class="status-box">
+                    <div id="collectStatus" class="status-text">点击按钮开始收集坐标点</div>
+                </div>
             </div>
-            <div class="status-box">
-                <div id="sendStatus" class="status-text">输入消息并选择设备后点击发送</div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">群发模式</div>
-            <div style="margin-bottom: 10px; color: #666; font-size: 14px;">
-                左键点击第1个公共点、复制消息并粘贴到输入框、点击第2个公共点、点击第3个公共点
-            </div>
-            <div class="input-group">
-                <input type="text" id="batchMessageInput" class="input-field" placeholder="输入要群发的消息">
-                <button id="clickAllBtn" class="btn btn-primary" onclick="clickAllCommonPoints()">
-                    群发消息
-                </button>
-            </div>
-            <div class="status-box">
-                <div id="clickAllStatus" class="status-text">输入消息后点击群发消息按钮</div>
-            </div>
-        </div>
-
-        <div class="section">
-            <div class="section-title">已保存的设备信息</div>
-            <button class="btn btn-primary" onclick="loadGroups()">
-                刷新设备列表
-            </button>
-            <div id="groupsDisplay" class="points-display">
-                <div class="point-item">
-                    <span class="point-label">暂无设备数据</span>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">📱</span>
+                    <span>收集设备特定点</span>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="groupIdInput" class="input-field" placeholder="输入设备ID（如 group1, group2）">
+                    <button id="collectGroupBtn" class="btn btn-primary" onclick="startCollectGroup()">
+                        收集设备特定点
+                    </button>
                 </div>
             </div>
         </div>
 
-        <div class="section">
-            <div class="section-title">话术管理</div>
-            <div class="input-group">
-                <select id="scriptCategorySelect" class="input-field" onchange="loadScriptsByCategory()">
-                    <option value="">选择类目</option>
-                </select>
-                <input type="text" id="newScriptInput" class="input-field" placeholder="输入新话术">
-                <button id="addScriptBtn" class="btn btn-primary" onclick="addScript()">
-                    添加话术
-                </button>
+        <div id="send" class="content-section">
+            <div class="section-header">
+                <h2>💬 发送消息</h2>
+                <p>向指定设备发送消息</p>
             </div>
-            <div id="scriptsDisplay" class="points-display" style="margin-top: 10px;">
-                <div class="point-item">
-                    <span class="point-label">请先选择类目</span>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">📤</span>
+                    <span>发送消息</span>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="messageInput" class="input-field" placeholder="请输入要发送的消息">
+                    <select id="groupSelect" class="input-field" style="flex: 0.5;">
+                        <option value="">选择设备</option>
+                    </select>
+                    <button id="sendBtn" class="btn btn-success" onclick="sendMessage()">
+                        发送消息
+                    </button>
+                </div>
+                <div class="status-box">
+                    <div id="sendStatus" class="status-text">输入消息并选择设备后点击发送</div>
                 </div>
             </div>
         </div>
 
-        <div class="section">
-            <div class="section-title">群控功能</div>
-            <div style="margin-bottom: 15px;">
-                <strong>类目概率设置：</strong>
-                <div id="categoryProbabilitySettings" style="margin-top: 10px;">
-                    <div class="point-item">
-                        <span class="point-label">正在加载类目...</span>
+        <div id="batch" class="content-section">
+            <div class="section-header">
+                <h2>📢 群发模式</h2>
+                <p>使用公共点快速群发消息</p>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">🚀</span>
+                    <span>群发消息</span>
+                </div>
+                <div class="info-text">
+                    <strong>操作流程：</strong>左键点击第1个公共点、复制消息并粘贴到输入框、点击第2个公共点、点击第3个公共点
+                </div>
+                <div class="input-group">
+                    <input type="text" id="batchMessageInput" class="input-field" placeholder="输入要群发的消息">
+                    <button id="clickAllBtn" class="btn btn-primary" onclick="clickAllCommonPoints()">
+                        群发消息
+                    </button>
+                </div>
+                <div class="status-box">
+                    <div id="clickAllStatus" class="status-text">输入消息后点击群发消息按钮</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="devices" class="content-section">
+            <div class="section-header">
+                <h2>📱 设备管理</h2>
+                <p>查看和管理已保存的设备信息</p>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">📋</span>
+                    <span>设备列表</span>
+                </div>
+                <button class="btn btn-primary" onclick="loadGroups()">
+                    刷新设备列表
+                </button>
+                <div id="groupsDisplay" class="points-display">
+                    <div class="empty-state">
+                        <div class="icon">📱</div>
+                        <div>暂无设备数据</div>
                     </div>
                 </div>
-                <div style="margin-top: 10px;">
-                    <span id="totalProbability" style="color: #666; font-size: 14px;">总概率：0%</span>
+            </div>
+        </div>
+
+        <div id="scripts" class="content-section">
+            <div class="section-header">
+                <h2>📝 话术管理</h2>
+                <p>管理话术和类目</p>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">➕</span>
+                    <span>添加话术</span>
+                </div>
+                <div class="input-group">
+                    <select id="scriptCategorySelect" class="input-field" onchange="loadScriptsByCategory()">
+                        <option value="">选择类目</option>
+                    </select>
+                    <input type="text" id="newScriptInput" class="input-field" placeholder="输入新话术">
+                    <button id="addScriptBtn" class="btn btn-primary" onclick="addScript()">
+                        添加话术
+                    </button>
                 </div>
             </div>
-            <div class="input-group">
-                <button id="startBatchBtn" class="btn btn-success" onclick="startBatchControl()">
-                    开始群控
-                </button>
-                <button id="stopBatchBtn" class="btn btn-danger" onclick="stopBatchControl()" disabled>
-                    停止群控
-                </button>
-            </div>
-            <div style="margin-top: 10px; color: #666; font-size: 14px;">
-                ⚠️ 提示：群控运行时按 <strong>ESC键</strong> 可快速停止
-            </div>
-            <div class="status-box">
-                <div id="batchStatus" class="status-text">设置类目概率后点击开始群控</div>
-            </div>
-            <div class="points-display" style="margin-top: 10px;">
-                <div class="point-item">
-                    <span class="point-label">已发送消息数：</span>
-                    <span class="point-coords" id="sentCount">0</span>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">📚</span>
+                    <span>话术列表</span>
                 </div>
-                <div class="point-item">
-                    <span class="point-label">当前设备：</span>
-                    <span class="point-coords" id="currentGroup">-</span>
-                </div>
-                <div class="point-item">
-                    <span class="point-label">当前消息：</span>
-                    <span class="point-coords" id="currentMessage">-</span>
+                <div id="scriptsDisplay" class="points-display">
+                    <div class="empty-state">
+                        <div class="icon">📝</div>
+                        <div>请先选择类目</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="section">
-            <div class="section-title">定期发送</div>
-            <div class="input-group">
-                <input type="text" id="scheduledMessageInput" class="input-field" placeholder="输入要定期发送的消息">
-                <select id="scheduledGroupSelect" class="input-field" style="flex: 0.5;">
-                    <option value="">选择设备</option>
-                </select>
+        <div id="batch-control" class="content-section">
+            <div class="section-header">
+                <h2>🎯 群控功能</h2>
+                <p>自动群发消息到所有设备</p>
             </div>
-            <div class="input-group">
-                <input type="number" id="intervalInput" class="input-field" placeholder="时间间隔（秒）" min="1" value="60">
-                <button id="startScheduledBtn" class="btn btn-success" onclick="startScheduledSend()">
-                    开始定期发送
-                </button>
-                <button id="stopScheduledBtn" class="btn btn-danger" onclick="stopScheduledSend()" disabled>
-                    停止定期发送
-                </button>
-            </div>
-            <div style="margin-top: 10px; color: #666; font-size: 14px;">
-                ⚠️ 提示：定期发送运行时按 <strong>ESC键</strong> 可快速停止
-            </div>
-            <div class="status-box">
-                <div id="scheduledStatus" class="status-text">输入消息、选择设备并设置时间间隔后点击开始</div>
-            </div>
-            <div class="points-display" style="margin-top: 10px;">
-                <div class="point-item">
-                    <span class="point-label">已发送消息数：</span>
-                    <span class="point-coords" id="scheduledSentCount">0</span>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">⚙️</span>
+                    <span>类目概率设置</span>
                 </div>
-                <div class="point-item">
-                    <span class="point-label">下次发送时间：</span>
-                    <span class="point-coords" id="nextSendTime">-</span>
+                <div id="categoryProbabilitySettings">
+                    <div class="empty-state">
+                        <div class="icon">⏳</div>
+                        <div>正在加载类目...</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <span id="totalProbability" style="color: rgba(255, 255, 255, 0.6); font-size: 14px;">总概率：0%</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">🚀</span>
+                    <span>群控操作</span>
+                </div>
+                <div class="input-group">
+                    <button id="startBatchBtn" class="btn btn-success" onclick="startBatchControl()">
+                        开始群控
+                    </button>
+                    <button id="stopBatchBtn" class="btn btn-danger" onclick="stopBatchControl()" disabled>
+                        停止群控
+                    </button>
+                </div>
+                <div class="info-text">
+                    ⚠️ 提示：群控运行时按 <strong>ESC键</strong> 可快速停止
+                </div>
+                <div class="status-box">
+                    <div id="batchStatus" class="status-text">设置类目概率后点击开始群控</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="sentCount">0</div>
+                        <div class="stat-label">已发送消息数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="currentGroup">-</div>
+                        <div class="stat-label">当前设备</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="currentMessage">-</div>
+                        <div class="stat-label">当前消息</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="scheduled" class="content-section">
+            <div class="section-header">
+                <h2>⏰ 定期发送</h2>
+                <p>定时向指定设备发送消息</p>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">⚙️</span>
+                    <span>设置定期发送</span>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="scheduledMessageInput" class="input-field" placeholder="输入要定期发送的消息">
+                    <select id="scheduledGroupSelect" class="input-field" style="flex: 0.5;">
+                        <option value="">选择设备</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <input type="number" id="intervalInput" class="input-field" placeholder="时间间隔（秒）" min="1" value="60">
+                    <button id="startScheduledBtn" class="btn btn-success" onclick="startScheduledSend()">
+                        开始定期发送
+                    </button>
+                    <button id="stopScheduledBtn" class="btn btn-danger" onclick="stopScheduledSend()" disabled>
+                        停止定期发送
+                    </button>
+                </div>
+                <div class="info-text">
+                    ⚠️ 提示：定期发送运行时按 <strong>ESC键</strong> 可快速停止
+                </div>
+                <div class="status-box">
+                    <div id="scheduledStatus" class="status-text">输入消息、选择设备并设置时间间隔后点击开始</div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="scheduledSentCount">0</div>
+                        <div class="stat-label">已发送消息数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="nextSendTime">-</div>
+                        <div class="stat-label">下次发送时间</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -415,6 +788,17 @@
     <script>
         let statusInterval = null;
         let batchStatusInterval = null;
+
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+                
+                this.classList.add('active');
+                const sectionId = this.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+            });
+        });
 
         async function startCollectCommon() {
             const collectCommonBtn = document.getElementById('collectCommonBtn');
@@ -578,305 +962,16 @@
             sendBtn.disabled = false;
         }
 
-        async function loadGroups() {
-            try {
-                const response = await fetch('/api/groups');
-                const data = await response.json();
-                
-                const groupsDisplay = document.getElementById('groupsDisplay');
-                const groupSelect = document.getElementById('groupSelect');
-                const scheduledGroupSelect = document.getElementById('scheduledGroupSelect');
-                
-                if (data.success && data.data) {
-                    const commonPoints = data.data.common_points || [];
-                    const groupPoints = data.data.group_points || {};
-                    
-                    let html = '';
-                    
-                    if (commonPoints.length > 0) {
-                        html += '<div style="margin-bottom: 15px;"><strong>公共点：</strong><br>';
-                        commonPoints.forEach((point, index) => {
-                            html += `<div class="point-item">
-                                <span class="point-label">公共点 ${index + 1}</span>
-                                <span class="point-coords">(${point[0]}, ${point[1]})</span>
-                            </div>`;
-                        });
-                        html += '</div>';
-                    }
-                    
-                    if (Object.keys(groupPoints).length > 0) {
-                        html += '<strong>设备列表：</strong><br>';
-                        html += '<div class="group-list">';
-                        
-                        for (const [groupId, points] of Object.entries(groupPoints)) {
-                            html += `
-                                <div class="group-item">
-                                    <span class="group-name">${groupId}</span>
-                                    <span class="group-points-count">${points.length} 个点</span>
-                                    <button class="delete-group-btn" onclick="deleteGroup('${groupId}')">×</button>
-                                </div>
-                            `;
-                        }
-                        
-                        html += '</div>';
-                    }
-                    
-                    if (!html) {
-                        html = '<div class="point-item"><span class="point-label">暂无设备数据</span></div>';
-                    }
-                    
-                    groupsDisplay.innerHTML = html;
-                    
-                    groupSelect.innerHTML = '<option value="">选择设备</option>';
-                    scheduledGroupSelect.innerHTML = '<option value="">选择设备</option>';
-                    for (const groupId of Object.keys(groupPoints)) {
-                        groupSelect.innerHTML += `<option value="${groupId}">${groupId}</option>`;
-                        scheduledGroupSelect.innerHTML += `<option value="${groupId}">${groupId}</option>`;
-                    }
-                } else {
-                    groupsDisplay.innerHTML = `
-                        <div class="point-item">
-                            <span class="point-label">暂无设备数据</span>
-                        </div>
-                    `;
-                    groupSelect.innerHTML = '<option value="">选择设备</option>';
-                    scheduledGroupSelect.innerHTML = '<option value="">选择设备</option>';
-                }
-            } catch (error) {
-                console.error('加载设备数据失败:', error);
-            }
-        }
-
-        async function deleteGroup(groupId) {
-            if (!confirm(`确定要删除设备 ${groupId} 吗？`)) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/api/groups/${groupId}`, {
-                    method: 'DELETE'
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    loadGroups();
-                } else {
-                    alert('删除失败：' + data.message);
-                }
-            } catch (error) {
-                alert('删除失败：' + error.message);
-            }
-        }
-
-        async function loadScriptCategories() {
-            try {
-                const response = await fetch('/api/scripts/categories');
-                const data = await response.json();
-                
-                const scriptCategorySelect = document.getElementById('scriptCategorySelect');
-                const categoryProbabilitySettings = document.getElementById('categoryProbabilitySettings');
-                
-                if (data.success && data.categories) {
-                    scriptCategorySelect.innerHTML = '<option value="">选择类目</option>';
-                    data.categories.forEach(category => {
-                        scriptCategorySelect.innerHTML += `<option value="${category}">${category}</option>`;
-                    });
-                    
-                    let html = '';
-                    data.categories.forEach(category => {
-                        html += `
-                            <div class="point-item">
-                                <span class="point-label">${category}</span>
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="number" 
-                                           id="prob_${category}" 
-                                           class="input-field" 
-                                           style="width: 80px; padding: 8px;" 
-                                           min="0" 
-                                           max="1" 
-                                           step="0.1" 
-                                           value="0"
-                                           onchange="updateTotalProbability()">
-                                    <span style="color: #666;">概率</span>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    categoryProbabilitySettings.innerHTML = html;
-                    updateTotalProbability();
-                }
-            } catch (error) {
-                console.error('加载话术类别失败:', error);
-            }
-        }
-
-        async function loadScriptsByCategory() {
-            const scriptCategorySelect = document.getElementById('scriptCategorySelect');
-            const category = scriptCategorySelect.value;
-            const scriptsDisplay = document.getElementById('scriptsDisplay');
-            
-            if (!category) {
-                scriptsDisplay.innerHTML = `
-                    <div class="point-item">
-                        <span class="point-label">请先选择类目</span>
-                    </div>
-                `;
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`);
-                const data = await response.json();
-                
-                if (data.success && data.scripts) {
-                    let html = '';
-                    data.scripts.forEach((script, index) => {
-                        html += `
-                            <div class="point-item" id="script_${index}">
-                                <span class="point-label" style="flex: 1;">${script}</span>
-                                <div style="display: flex; gap: 5px;">
-                                    <button class="btn btn-primary" 
-                                            style="padding: 5px 10px; font-size: 12px;" 
-                                            onclick="editScript(${index})">
-                                        编辑
-                                    </button>
-                                    <button class="btn btn-danger" 
-                                            style="padding: 5px 10px; font-size: 12px;" 
-                                            onclick="deleteScript(${index})">
-                                        删除
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    scriptsDisplay.innerHTML = html;
-                } else {
-                    scriptsDisplay.innerHTML = `
-                        <div class="point-item">
-                            <span class="point-label">${data.message}</span>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('加载话术失败:', error);
-                scriptsDisplay.innerHTML = `
-                    <div class="point-item">
-                        <span class="point-label">加载失败：${error.message}</span>
-                    </div>
-                `;
-            }
-        }
-
-        async function addScript() {
-            const scriptCategorySelect = document.getElementById('scriptCategorySelect');
-            const newScriptInput = document.getElementById('newScriptInput');
-            const category = scriptCategorySelect.value;
-            const script = newScriptInput.value.trim();
-            
-            if (!category) {
-                alert('请先选择类目');
-                return;
-            }
-            
-            if (!script) {
-                alert('请输入话术内容');
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ script: script })
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    newScriptInput.value = '';
-                    loadScriptsByCategory();
-                } else {
-                    alert('添加失败：' + data.message);
-                }
-            } catch (error) {
-                alert('添加失败：' + error.message);
-            }
-        }
-
-        async function editScript(index) {
-            const scriptCategorySelect = document.getElementById('scriptCategorySelect');
-            const category = scriptCategorySelect.value;
-            const scriptsDisplay = document.getElementById('scriptsDisplay');
-            const scriptElement = document.getElementById(`script_${index}`);
-            const oldScript = scriptElement.querySelector('.point-label').textContent;
-            
-            const newScript = prompt('编辑话术', oldScript);
-            
-            if (newScript === null || newScript.trim() === '') {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ old_script: oldScript, new_script: newScript.trim() })
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    loadScriptsByCategory();
-                } else {
-                    alert('修改失败：' + data.message);
-                }
-            } catch (error) {
-                alert('修改失败：' + error.message);
-            }
-        }
-
-        async function deleteScript(index) {
-            const scriptCategorySelect = document.getElementById('scriptCategorySelect');
-            const category = scriptCategorySelect.value;
-            const scriptsDisplay = document.getElementById('scriptsDisplay');
-            const scriptElement = document.getElementById(`script_${index}`);
-            const script = scriptElement.querySelector('.point-label').textContent;
-            
-            if (!confirm(`确定要删除话术"${script}"吗？`)) {
-                return;
-            }
-            
-            try {
-                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ script: script })
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    loadScriptsByCategory();
-                } else {
-                    alert('删除失败：' + data.message);
-                }
-            } catch (error) {
-                alert('删除失败：' + error.message);
-            }
-        }
-
         async function clickAllCommonPoints() {
+            const batchMessageInput = document.getElementById('batchMessageInput');
             const clickAllBtn = document.getElementById('clickAllBtn');
             const clickAllStatus = document.getElementById('clickAllStatus');
-            const batchMessageInput = document.getElementById('batchMessageInput');
             
             const message = batchMessageInput.value.trim();
             
             if (!message) {
-                alert('请输入要群发的消息');
+                clickAllStatus.textContent = '请输入要群发的消息';
+                clickAllStatus.className = 'status-text error';
                 return;
             }
             
@@ -908,38 +1003,240 @@
             clickAllBtn.disabled = false;
         }
 
-        function updateTotalProbability() {
-            const categoryProbabilitySettings = document.getElementById('categoryProbabilitySettings');
-            const inputs = categoryProbabilitySettings.querySelectorAll('input[type="number"]');
-            let total = 0;
-            
-            inputs.forEach(input => {
-                total += parseFloat(input.value) || 0;
-            });
-            
-            const totalProbability = document.getElementById('totalProbability');
-            totalProbability.textContent = `总概率：${(total * 100).toFixed(0)}%`;
-            
-            if (total > 1) {
-                totalProbability.style.color = '#dc3545';
-            } else if (total < 1) {
-                totalProbability.style.color = '#ffc107';
-            } else {
-                totalProbability.style.color = '#28a745';
+        async function loadGroups() {
+            try {
+                const response = await fetch('/api/groups');
+                const data = await response.json();
+                
+                const groupsDisplay = document.getElementById('groupsDisplay');
+                const groupSelect = document.getElementById('groupSelect');
+                const scheduledGroupSelect = document.getElementById('scheduledGroupSelect');
+                
+                if (data.success && data.data) {
+                    const groups = data.data;
+                    const groupPoints = groups.group_points || {};
+                    const groupIds = Object.keys(groupPoints);
+                    
+                    if (groupIds.length > 0) {
+                        let html = '<div class="group-list">';
+                        groupIds.forEach(groupId => {
+                            const points = groupPoints[groupId];
+                            html += `
+                                <div class="group-item">
+                                    <span class="group-name">${groupId}</span>
+                                    <span class="group-points-count">${points.length} 个点</span>
+                                    <button class="delete-group-btn" onclick="deleteGroup('${groupId}')">×</button>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                        groupsDisplay.innerHTML = html;
+                        
+                        groupSelect.innerHTML = '<option value="">选择设备</option>';
+                        scheduledGroupSelect.innerHTML = '<option value="">选择设备</option>';
+                        groupIds.forEach(groupId => {
+                            groupSelect.innerHTML += `<option value="${groupId}">${groupId}</option>`;
+                            scheduledGroupSelect.innerHTML += `<option value="${groupId}">${groupId}</option>`;
+                        });
+                    } else {
+                        groupsDisplay.innerHTML = `
+                            <div class="empty-state">
+                                <div class="icon">📱</div>
+                                <div>暂无设备数据</div>
+                            </div>
+                        `;
+                        groupSelect.innerHTML = '<option value="">选择设备</option>';
+                        scheduledGroupSelect.innerHTML = '<option value="">选择设备</option>';
+                    }
+                } else {
+                    groupsDisplay.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">📱</div>
+                            <div>暂无设备数据</div>
+                        </div>
+                    `;
+                    groupSelect.innerHTML = '<option value="">选择设备</option>';
+                    scheduledGroupSelect.innerHTML = '<option value="">选择设备</option>';
+                }
+            } catch (error) {
+                console.error('加载设备列表失败:', error);
             }
         }
 
-        function getCategoryProbabilities() {
-            const categoryProbabilitySettings = document.getElementById('categoryProbabilitySettings');
-            const inputs = categoryProbabilitySettings.querySelectorAll('input[type="number"]');
-            const probabilities = {};
+        async function deleteGroup(groupId) {
+            if (!confirm(`确定要删除设备 ${groupId} 吗？`)) {
+                return;
+            }
             
-            inputs.forEach(input => {
-                const category = input.id.replace('prob_', '');
-                probabilities[category] = parseFloat(input.value) || 0;
+            try {
+                const response = await fetch(`/api/groups/${encodeURIComponent(groupId)}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadGroups();
+                } else {
+                    alert('删除失败：' + data.message);
+                }
+            } catch (error) {
+                alert('删除失败：' + error.message);
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const response = await fetch('/api/scripts/categories');
+                const data = await response.json();
+                
+                const scriptCategorySelect = document.getElementById('scriptCategorySelect');
+                
+                if (data.success && data.categories && data.categories.length > 0) {
+                    scriptCategorySelect.innerHTML = '<option value="">选择类目</option>';
+                    data.categories.forEach(category => {
+                        scriptCategorySelect.innerHTML += `<option value="${category}">${category}</option>`;
+                    });
+                    
+                    loadCategoryProbabilitySettings(data.categories);
+                }
+            } catch (error) {
+                console.error('加载类目失败:', error);
+            }
+        }
+
+        function loadCategoryProbabilitySettings(categories) {
+            const settingsDiv = document.getElementById('categoryProbabilitySettings');
+            
+            let html = '';
+            categories.forEach(category => {
+                html += `
+                    <div class="probability-row">
+                        <span class="probability-label">${category}</span>
+                        <input type="number" class="probability-input" 
+                               data-category="${category}" 
+                               value="0" 
+                               min="0" 
+                               max="100"
+                               onchange="updateTotalProbability()">
+                    </div>
+                `;
             });
             
-            return probabilities;
+            settingsDiv.innerHTML = html;
+            updateTotalProbability();
+        }
+
+        function updateTotalProbability() {
+            const inputs = document.querySelectorAll('.probability-input');
+            let total = 0;
+            
+            inputs.forEach(input => {
+                total += parseInt(input.value) || 0;
+            });
+            
+            document.getElementById('totalProbability').textContent = `总概率：${total}%`;
+        }
+
+        async function loadScriptsByCategory() {
+            const category = document.getElementById('scriptCategorySelect').value;
+            const scriptsDisplay = document.getElementById('scriptsDisplay');
+            
+            if (!category) {
+                scriptsDisplay.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📝</div>
+                        <div>请先选择类目</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`);
+                const data = await response.json();
+                
+                if (data.success && data.scripts && data.scripts.length > 0) {
+                    let html = '';
+                    data.scripts.forEach(script => {
+                        html += `
+                            <div class="script-item">
+                                <span class="script-text">${script}</span>
+                                <button class="delete-script-btn" onclick="deleteScript('${category}', '${script.replace(/'/g, "\\'")}')">删除</button>
+                            </div>
+                        `;
+                    });
+                    scriptsDisplay.innerHTML = html;
+                } else {
+                    scriptsDisplay.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">📝</div>
+                            <div>该类目下暂无话术</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('加载话术失败:', error);
+            }
+        }
+
+        async function addScript() {
+            const category = document.getElementById('scriptCategorySelect').value;
+            const script = document.getElementById('newScriptInput').value.trim();
+            
+            if (!category) {
+                alert('请选择类目');
+                return;
+            }
+            
+            if (!script) {
+                alert('请输入话术内容');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ script: script })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('newScriptInput').value = '';
+                    loadScriptsByCategory();
+                } else {
+                    alert('添加失败：' + data.message);
+                }
+            } catch (error) {
+                alert('添加失败：' + error.message);
+            }
+        }
+
+        async function deleteScript(category, script) {
+            if (!confirm(`确定要删除这条话术吗？`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ script: script })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadScriptsByCategory();
+                } else {
+                    alert('删除失败：' + data.message);
+                }
+            } catch (error) {
+                alert('删除失败：' + error.message);
+            }
         }
 
         async function startBatchControl() {
@@ -947,17 +1244,17 @@
             const stopBatchBtn = document.getElementById('stopBatchBtn');
             const batchStatus = document.getElementById('batchStatus');
             
-            const probabilities = getCategoryProbabilities();
-            const totalProbability = Object.values(probabilities).reduce((a, b) => a + b, 0);
+            const categoryProbabilities = {};
+            document.querySelectorAll('.probability-input').forEach(input => {
+                const category = input.getAttribute('data-category');
+                const probability = parseInt(input.value) || 0;
+                if (probability > 0) {
+                    categoryProbabilities[category] = probability / 100;
+                }
+            });
             
-            if (totalProbability <= 0) {
+            if (Object.keys(categoryProbabilities).length === 0) {
                 batchStatus.textContent = '请至少设置一个类目的概率';
-                batchStatus.className = 'status-text error';
-                return;
-            }
-            
-            if (totalProbability > 1) {
-                batchStatus.textContent = '总概率不能超过100%';
                 batchStatus.className = 'status-text error';
                 return;
             }
@@ -972,7 +1269,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ probabilities: probabilities })
+                    body: JSON.stringify({ probabilities: categoryProbabilities })
                 });
                 const data = await response.json();
                 
@@ -999,9 +1296,6 @@
             const stopBatchBtn = document.getElementById('stopBatchBtn');
             const batchStatus = document.getElementById('batchStatus');
             
-            stopBatchBtn.disabled = true;
-            batchStatus.innerHTML = '<span class="loading"></span>正在停止群控...';
-            
             try {
                 const response = await fetch('/api/batch/stop', {
                     method: 'POST'
@@ -1012,34 +1306,77 @@
                     batchStatus.textContent = data.message;
                     batchStatus.className = 'status-text success';
                     startBatchBtn.disabled = false;
+                    stopBatchBtn.disabled = true;
+                    
+                    if (batchStatusInterval) {
+                        clearInterval(batchStatusInterval);
+                        batchStatusInterval = null;
+                    }
                 } else {
                     batchStatus.textContent = data.message;
                     batchStatus.className = 'status-text error';
-                    stopBatchBtn.disabled = false;
                 }
             } catch (error) {
                 batchStatus.textContent = '停止失败：' + error.message;
                 batchStatus.className = 'status-text error';
-                stopBatchBtn.disabled = false;
             }
         }
 
-        let scheduledStatusInterval = null;
+        function startBatchStatusPolling() {
+            if (batchStatusInterval) {
+                clearInterval(batchStatusInterval);
+            }
+            
+            batchStatusInterval = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/batch/status');
+                    const data = await response.json();
+                    
+                    const batchStatus = document.getElementById('batchStatus');
+                    const startBatchBtn = document.getElementById('startBatchBtn');
+                    const stopBatchBtn = document.getElementById('stopBatchBtn');
+                    
+                    batchStatus.textContent = data.message;
+                    
+                    document.getElementById('sentCount').textContent = data.sent_count || 0;
+                    document.getElementById('currentGroup').textContent = data.current_group || '-';
+                    document.getElementById('currentMessage').textContent = data.current_message || '-';
+                    
+                    if (data.status === 'running') {
+                        batchStatus.className = 'status-text';
+                    } else if (data.status === 'stopped') {
+                        batchStatus.className = 'status-text success';
+                        startBatchBtn.disabled = false;
+                        stopBatchBtn.disabled = true;
+                        clearInterval(batchStatusInterval);
+                        batchStatusInterval = null;
+                    } else if (data.status === 'error') {
+                        batchStatus.className = 'status-text error';
+                        startBatchBtn.disabled = false;
+                        stopBatchBtn.disabled = true;
+                        clearInterval(batchStatusInterval);
+                        batchStatusInterval = null;
+                    }
+                } catch (error) {
+                    console.error('获取群控状态失败:', error);
+                }
+            }, 500);
+        }
 
         async function startScheduledSend() {
-            const startScheduledBtn = document.getElementById('startScheduledBtn');
-            const stopScheduledBtn = document.getElementById('stopScheduledBtn');
-            const scheduledStatus = document.getElementById('scheduledStatus');
             const scheduledMessageInput = document.getElementById('scheduledMessageInput');
             const scheduledGroupSelect = document.getElementById('scheduledGroupSelect');
             const intervalInput = document.getElementById('intervalInput');
+            const startScheduledBtn = document.getElementById('startScheduledBtn');
+            const stopScheduledBtn = document.getElementById('stopScheduledBtn');
+            const scheduledStatus = document.getElementById('scheduledStatus');
             
             const message = scheduledMessageInput.value.trim();
             const groupId = scheduledGroupSelect.value;
             const interval = parseInt(intervalInput.value);
             
             if (!message) {
-                scheduledStatus.textContent = '请输入要定期发送的消息';
+                scheduledStatus.textContent = '请输入消息内容';
                 scheduledStatus.className = 'status-text error';
                 return;
             }
@@ -1051,7 +1388,7 @@
             }
             
             if (!interval || interval < 1) {
-                scheduledStatus.textContent = '请输入有效的时间间隔（至少1秒）';
+                scheduledStatus.textContent = '请输入有效的时间间隔';
                 scheduledStatus.className = 'status-text error';
                 return;
             }
@@ -1066,7 +1403,11 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ message: message, group_id: groupId, interval: interval })
+                    body: JSON.stringify({ 
+                        message: message, 
+                        group_id: groupId, 
+                        interval: interval 
+                    })
                 });
                 const data = await response.json();
                 
@@ -1093,9 +1434,6 @@
             const stopScheduledBtn = document.getElementById('stopScheduledBtn');
             const scheduledStatus = document.getElementById('scheduledStatus');
             
-            stopScheduledBtn.disabled = true;
-            scheduledStatus.innerHTML = '<span class="loading"></span>正在停止定期发送...';
-            
             try {
                 const response = await fetch('/api/scheduled/stop', {
                     method: 'POST'
@@ -1106,17 +1444,23 @@
                     scheduledStatus.textContent = data.message;
                     scheduledStatus.className = 'status-text success';
                     startScheduledBtn.disabled = false;
+                    stopScheduledBtn.disabled = true;
+                    
+                    if (scheduledStatusInterval) {
+                        clearInterval(scheduledStatusInterval);
+                        scheduledStatusInterval = null;
+                    }
                 } else {
                     scheduledStatus.textContent = data.message;
                     scheduledStatus.className = 'status-text error';
-                    stopScheduledBtn.disabled = false;
                 }
             } catch (error) {
                 scheduledStatus.textContent = '停止失败：' + error.message;
                 scheduledStatus.className = 'status-text error';
-                stopScheduledBtn.disabled = false;
             }
         }
+
+        let scheduledStatusInterval = null;
 
         function startScheduledStatusPolling() {
             if (scheduledStatusInterval) {
@@ -1131,37 +1475,26 @@
                     const scheduledStatus = document.getElementById('scheduledStatus');
                     const startScheduledBtn = document.getElementById('startScheduledBtn');
                     const stopScheduledBtn = document.getElementById('stopScheduledBtn');
-                    const scheduledSentCount = document.getElementById('scheduledSentCount');
-                    const nextSendTime = document.getElementById('nextSendTime');
                     
                     scheduledStatus.textContent = data.message;
-                    scheduledSentCount.textContent = data.sent_count || 0;
                     
-                    if (data.next_send_time) {
-                        const nextTime = new Date(data.next_send_time);
-                        const now = new Date();
-                        const diff = Math.max(0, Math.floor((nextTime - now) / 1000));
-                        const minutes = Math.floor(diff / 60);
-                        const seconds = diff % 60;
-                        nextSendTime.textContent = `${minutes}分${seconds}秒`;
-                    } else {
-                        nextSendTime.textContent = '-';
-                    }
+                    document.getElementById('scheduledSentCount').textContent = data.sent_count || 0;
+                    document.getElementById('nextSendTime').textContent = data.next_send_time || '-';
                     
                     if (data.status === 'running') {
                         scheduledStatus.className = 'status-text';
-                        startScheduledBtn.disabled = true;
-                        stopScheduledBtn.disabled = false;
-                    } else if (data.status === 'idle') {
+                    } else if (data.status === 'stopped') {
                         scheduledStatus.className = 'status-text success';
                         startScheduledBtn.disabled = false;
                         stopScheduledBtn.disabled = true;
                         clearInterval(scheduledStatusInterval);
+                        scheduledStatusInterval = null;
                     } else if (data.status === 'error') {
                         scheduledStatus.className = 'status-text error';
                         startScheduledBtn.disabled = false;
                         stopScheduledBtn.disabled = true;
                         clearInterval(scheduledStatusInterval);
+                        scheduledStatusInterval = null;
                     }
                 } catch (error) {
                     console.error('获取定期发送状态失败:', error);
@@ -1169,83 +1502,26 @@
             }, 500);
         }
 
-        function startBatchStatusPolling() {
-            if (batchStatusInterval) {
-                clearInterval(batchStatusInterval);
-            }
-            
-            batchStatusInterval = setInterval(async () => {
-                try {
-                    const response = await fetch('/api/batch/status');
-                    const data = await response.json();
-                    
-                    const batchStatus = document.getElementById('batchStatus');
-                    const startBatchBtn = document.getElementById('startBatchBtn');
-                    const stopBatchBtn = document.getElementById('stopBatchBtn');
-                    const sentCount = document.getElementById('sentCount');
-                    const currentGroup = document.getElementById('currentGroup');
-                    const currentMessage = document.getElementById('currentMessage');
-                    
-                    batchStatus.textContent = data.message;
-                    sentCount.textContent = data.sent_count || 0;
-                    currentGroup.textContent = data.current_group || '-';
-                    currentMessage.textContent = data.message.split('：')[1] || '-';
-                    
-                    if (data.status === 'running') {
-                        batchStatus.className = 'status-text';
-                        startBatchBtn.disabled = true;
-                        stopBatchBtn.disabled = false;
-                    } else if (data.status === 'idle') {
-                        batchStatus.className = 'status-text success';
-                        startBatchBtn.disabled = false;
-                        stopBatchBtn.disabled = true;
-                        clearInterval(batchStatusInterval);
-                    } else if (data.status === 'error') {
-                        batchStatus.className = 'status-text error';
-                        startBatchBtn.disabled = false;
-                        stopBatchBtn.disabled = true;
-                        clearInterval(batchStatusInterval);
-                    }
-                } catch (error) {
-                    console.error('获取群控状态失败:', error);
-                }
-            }, 500);
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            loadGroups();
-            loadScriptCategories();
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
                 const startBatchBtn = document.getElementById('startBatchBtn');
                 const stopBatchBtn = document.getElementById('stopBatchBtn');
                 
-                if (startBatchBtn.disabled && !stopBatchBtn.disabled) {
+                if (!stopBatchBtn.disabled) {
                     stopBatchControl();
                 }
                 
                 const startScheduledBtn = document.getElementById('startScheduledBtn');
                 const stopScheduledBtn = document.getElementById('stopScheduledBtn');
                 
-                if (startScheduledBtn.disabled && !stopScheduledBtn.disabled) {
+                if (!stopScheduledBtn.disabled) {
                     stopScheduledSend();
                 }
             }
         });
 
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-
-        document.getElementById('groupIdInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                startCollectGroup();
-            }
-        });
+        loadGroups();
+        loadCategories();
     </script>
 </body>
 </html>
