@@ -184,26 +184,43 @@ def get_script_categories():
     try:
         with open('话术.json', 'r', encoding='utf-8') as f:
             scripts = json.load(f)
-        categories = list(scripts.keys())
-        return jsonify({"success": True, "categories": categories})
+        products = list(scripts.keys())
+        return jsonify({"success": True, "products": products})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
-@app.route('/api/scripts/<category>', methods=['GET'])
-def get_scripts_by_category(category):
+@app.route('/api/scripts/<product>/categories', methods=['GET'])
+def get_categories_by_product(product):
     try:
         with open('话术.json', 'r', encoding='utf-8') as f:
             scripts = json.load(f)
         
-        if category not in scripts:
-            return jsonify({"success": False, "message": f"类目 {category} 不存在"})
+        if product not in scripts:
+            return jsonify({"success": False, "message": f"产品 {product} 不存在"})
         
-        return jsonify({"success": True, "scripts": scripts[category]})
+        categories = list(scripts[product].keys())
+        return jsonify({"success": True, "categories": categories})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
-@app.route('/api/scripts/<category>', methods=['POST'])
-def add_script(category):
+@app.route('/api/scripts/<product>/<category>', methods=['GET'])
+def get_scripts_by_product_category(product, category):
+    try:
+        with open('话术.json', 'r', encoding='utf-8') as f:
+            scripts = json.load(f)
+        
+        if product not in scripts:
+            return jsonify({"success": False, "message": f"产品 {product} 不存在"})
+        
+        if category not in scripts[product]:
+            return jsonify({"success": False, "message": f"类目 {category} 不存在"})
+        
+        return jsonify({"success": True, "scripts": scripts[product][category]})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/scripts/<product>/<category>', methods=['POST'])
+def add_script(product, category):
     try:
         data = request.json
         script = data.get('script', '')
@@ -214,10 +231,13 @@ def add_script(category):
         with open('话术.json', 'r', encoding='utf-8') as f:
             scripts = json.load(f)
         
-        if category not in scripts:
-            scripts[category] = []
+        if product not in scripts:
+            scripts[product] = {}
         
-        scripts[category].append(script)
+        if category not in scripts[product]:
+            scripts[product][category] = []
+        
+        scripts[product][category].append(script)
         
         with open('话术.json', 'w', encoding='utf-8') as f:
             json.dump(scripts, f, ensure_ascii=False, indent=2)
@@ -226,8 +246,8 @@ def add_script(category):
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
-@app.route('/api/scripts/<category>', methods=['PUT'])
-def update_script(category):
+@app.route('/api/scripts/<product>/<category>', methods=['PUT'])
+def update_script(product, category):
     try:
         data = request.json
         old_script = data.get('old_script', '')
@@ -239,14 +259,17 @@ def update_script(category):
         with open('话术.json', 'r', encoding='utf-8') as f:
             scripts = json.load(f)
         
-        if category not in scripts:
+        if product not in scripts:
+            return jsonify({"success": False, "message": f"产品 {product} 不存在"})
+        
+        if category not in scripts[product]:
             return jsonify({"success": False, "message": f"类目 {category} 不存在"})
         
-        if old_script not in scripts[category]:
+        if old_script not in scripts[product][category]:
             return jsonify({"success": False, "message": "原话术不存在"})
         
-        index = scripts[category].index(old_script)
-        scripts[category][index] = new_script
+        index = scripts[product][category].index(old_script)
+        scripts[product][category][index] = new_script
         
         with open('话术.json', 'w', encoding='utf-8') as f:
             json.dump(scripts, f, ensure_ascii=False, indent=2)
@@ -255,8 +278,8 @@ def update_script(category):
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
-@app.route('/api/scripts/<category>', methods=['DELETE'])
-def delete_script(category):
+@app.route('/api/scripts/<product>/<category>', methods=['DELETE'])
+def delete_script(product, category):
     try:
         data = request.json
         script = data.get('script', '')
@@ -267,13 +290,16 @@ def delete_script(category):
         with open('话术.json', 'r', encoding='utf-8') as f:
             scripts = json.load(f)
         
-        if category not in scripts:
+        if product not in scripts:
+            return jsonify({"success": False, "message": f"产品 {product} 不存在"})
+        
+        if category not in scripts[product]:
             return jsonify({"success": False, "message": f"类目 {category} 不存在"})
         
-        if script not in scripts[category]:
+        if script not in scripts[product][category]:
             return jsonify({"success": False, "message": "话术不存在"})
         
-        scripts[category].remove(script)
+        scripts[product][category].remove(script)
         
         with open('话术.json', 'w', encoding='utf-8') as f:
             json.dump(scripts, f, ensure_ascii=False, indent=2)
@@ -290,28 +316,35 @@ def start_batch_control():
         return jsonify({"success": False, "message": "群控正在运行中"})
     
     data = request.json
-    probabilities = data.get('probabilities', {})
+    product = data.get('product', '')
+    category_probabilities = data.get('category_probabilities', {})
     
-    if not probabilities:
-        return jsonify({"success": False, "message": "概率设置不能为空"})
+    if not product:
+        return jsonify({"success": False, "message": "产品不能为空"})
     
-    total_probability = sum(probabilities.values())
-    if total_probability <= 0:
-        return jsonify({"success": False, "message": "总概率必须大于0"})
+    if not category_probabilities:
+        return jsonify({"success": False, "message": "分类概率设置不能为空"})
     
-    if total_probability > 1:
-        return jsonify({"success": False, "message": "总概率不能超过100%"})
+    total_category_probability = sum(category_probabilities.values())
+    if total_category_probability <= 0:
+        return jsonify({"success": False, "message": "分类总概率必须大于0"})
+    
+    if total_category_probability > 1:
+        return jsonify({"success": False, "message": "分类总概率不能超过100%"})
     
     try:
         with open('话术.json', 'r', encoding='utf-8') as f:
             scripts = json.load(f)
         
-        for category in probabilities.keys():
-            if category not in scripts:
-                return jsonify({"success": False, "message": f"话术类别 {category} 不存在"})
+        if product not in scripts:
+            return jsonify({"success": False, "message": f"产品 {product} 不存在"})
+        
+        for category in category_probabilities.keys():
+            if category not in scripts[product]:
+                return jsonify({"success": False, "message": f"产品 {product} 中的分类 {category} 不存在"})
         
         batch_control_running = True
-        batch_control_thread = threading.Thread(target=batch_control_worker, args=(probabilities,))
+        batch_control_thread = threading.Thread(target=batch_control_worker, args=(product, category_probabilities))
         batch_control_thread.start()
         
         return jsonify({"success": True, "message": f"开始群控，按ESC键可快速停止"})
@@ -347,7 +380,7 @@ def stop_batch_control():
 def get_batch_status():
     return jsonify(batch_control_status)
 
-def batch_control_worker(probabilities):
+def batch_control_worker(product, category_probabilities):
     global batch_control_status, batch_control_running, global_keyboard_listener
     
     if global_keyboard_listener is None:
@@ -358,10 +391,16 @@ def batch_control_worker(probabilities):
         with open('话术.json', 'r', encoding='utf-8') as f:
             scripts = json.load(f)
         
-        for category in probabilities.keys():
-            if category not in scripts:
+        if product not in scripts:
+            batch_control_status["status"] = "error"
+            batch_control_status["message"] = f"产品 {product} 不存在"
+            batch_control_running = False
+            return
+        
+        for category in category_probabilities.keys():
+            if category not in scripts[product]:
                 batch_control_status["status"] = "error"
-                batch_control_status["message"] = f"话术类别 {category} 不存在"
+                batch_control_status["message"] = f"产品 {product} 中的分类 {category} 不存在"
                 batch_control_running = False
                 return
         
@@ -380,17 +419,20 @@ def batch_control_worker(probabilities):
             return
         
         batch_control_status["status"] = "running"
-        batch_control_status["category"] = ", ".join(probabilities.keys())
+        batch_control_status["category"] = f"{product} - {', '.join(category_probabilities.keys())}"
         batch_control_status["sent_count"] = 0
         
         def select_category_by_probability():
+            categories = category_probabilities
+            if not categories:
+                return None
             r = random.random()
             cumulative = 0
-            for category, prob in probabilities.items():
+            for category, prob in categories.items():
                 cumulative += prob
                 if r <= cumulative:
                     return category
-            return list(probabilities.keys())[0]
+            return list(categories.keys())[0]
         
         while batch_control_running:
             for group_id in group_ids:
@@ -398,14 +440,18 @@ def batch_control_worker(probabilities):
                     break
                 
                 selected_category = select_category_by_probability()
-                messages = scripts.get(selected_category, [])
+                
+                if not selected_category:
+                    continue
+                
+                messages = scripts.get(product, {}).get(selected_category, [])
                 
                 if not messages:
                     continue
                 
                 message = random.choice(messages)
                 batch_control_status["current_group"] = group_id
-                batch_control_status["message"] = f"正在向设备 {group_id} 发送消息（{selected_category}）：{message}"
+                batch_control_status["message"] = f"正在向设备 {group_id} 发送消息（{product} - {selected_category}）：{message}"
                 
                 try:
                     send_message(message, group_id)

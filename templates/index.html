@@ -435,6 +435,50 @@
             border-color: #667eea;
         }
 
+        .product-button {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .product-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .product-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .preset-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .preset-button {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preset-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
         .probability-row {
             display: flex;
             justify-content: space-between;
@@ -450,6 +494,64 @@
         .probability-label {
             color: rgba(255, 255, 255, 0.8);
             font-size: 14px;
+            width: 120px;
+        }
+
+        .probability-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .probability-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .probability-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .probability-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .probability-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .probability-input {
+            width: 70px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .probability-input:focus {
+            outline: none;
+            border-color: #667eea;
         }
 
         .stats-grid {
@@ -657,6 +759,18 @@
             </div>
             <div class="card">
                 <div class="card-title">
+                    <span class="icon">🏷️</span>
+                    <span>选择产品</span>
+                </div>
+                <div id="productButtons" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+                    <div class="empty-state" style="flex: 1; padding: 20px;">
+                        <div class="icon">⏳</div>
+                        <div>正在加载产品...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="addScriptCard" style="display: none;">
+                <div class="card-title">
                     <span class="icon">➕</span>
                     <span>添加话术</span>
                 </div>
@@ -670,7 +784,7 @@
                     </button>
                 </div>
             </div>
-            <div class="card">
+            <div class="card" id="scriptsListCard" style="display: none;">
                 <div class="card-title">
                     <span class="icon">📚</span>
                     <span>话术列表</span>
@@ -691,17 +805,34 @@
             </div>
             <div class="card">
                 <div class="card-title">
+                    <span class="icon">🏷️</span>
+                    <span>选择产品</span>
+                </div>
+                <div id="batchProductButtons" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+                    <div class="empty-state" style="flex: 1; padding: 20px;">
+                        <div class="icon">⏳</div>
+                        <div>正在加载产品...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="categoryProbabilityCard" style="display: none;">
+                <div class="card-title">
                     <span class="icon">⚙️</span>
                     <span>类目概率设置</span>
+                </div>
+                <div class="preset-buttons">
+                    <button class="preset-button" onclick="applyPreset('balanced')">均衡档</button>
+                    <button class="preset-button" onclick="applyPreset('focus')">重点档</button>
+                    <button class="preset-button" onclick="applyPreset('random')">随机档</button>
                 </div>
                 <div id="categoryProbabilitySettings">
                     <div class="empty-state">
                         <div class="icon">⏳</div>
-                        <div>正在加载类目...</div>
+                        <div>请先选择产品</div>
                     </div>
                 </div>
                 <div style="margin-top: 15px;">
-                    <span id="totalProbability" style="color: rgba(255, 255, 255, 0.6); font-size: 14px;">总概率：0%</span>
+                    <span id="totalCategoryProbability" style="color: rgba(255, 255, 255, 0.6); font-size: 14px;">类目总概率：0%</span>
                 </div>
             </div>
             <div class="card">
@@ -721,7 +852,7 @@
                     ⚠️ 提示：群控运行时按 <strong>ESC键</strong> 可快速停止
                 </div>
                 <div class="status-box">
-                    <div id="batchStatus" class="status-text">设置类目概率后点击开始群控</div>
+                    <div id="batchStatus" class="status-text">选择产品并设置分类概率后点击开始群控</div>
                 </div>
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -1084,9 +1215,56 @@
             }
         }
 
-        async function loadCategories() {
+        let selectedProduct = '';
+        let selectedBatchProduct = '';
+
+        async function loadProducts() {
             try {
                 const response = await fetch('/api/scripts/categories');
+                const data = await response.json();
+                
+                if (data.success && data.products && data.products.length > 0) {
+                    renderProductButtons(data.products, 'productButtons');
+                    renderProductButtons(data.products, 'batchProductButtons');
+                }
+            } catch (error) {
+                console.error('加载产品失败:', error);
+            }
+        }
+
+        function renderProductButtons(products, containerId) {
+            const container = document.getElementById(containerId);
+            
+            let html = '';
+            products.forEach(product => {
+                html += `<button class="product-button" onclick="selectProduct('${product}', '${containerId}')">${product}</button>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        async function selectProduct(product, containerId) {
+            const container = document.getElementById(containerId);
+            const buttons = container.querySelectorAll('.product-button');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (containerId === 'productButtons') {
+                selectedProduct = product;
+                await loadCategoriesByProduct(product);
+                document.getElementById('addScriptCard').style.display = 'block';
+                document.getElementById('scriptsListCard').style.display = 'block';
+            } else if (containerId === 'batchProductButtons') {
+                selectedBatchProduct = product;
+                await loadCategoryProbabilitySettingsByProduct(product);
+                document.getElementById('categoryProbabilityCard').style.display = 'block';
+            }
+        }
+
+        async function loadCategoriesByProduct(product) {
+            try {
+                const response = await fetch(`/api/scripts/${encodeURIComponent(product)}/categories`);
                 const data = await response.json();
                 
                 const scriptCategorySelect = document.getElementById('scriptCategorySelect');
@@ -1096,63 +1274,173 @@
                     data.categories.forEach(category => {
                         scriptCategorySelect.innerHTML += `<option value="${category}">${category}</option>`;
                     });
-                    
-                    loadCategoryProbabilitySettings(data.categories);
+                } else {
+                    scriptCategorySelect.innerHTML = '<option value="">选择类目</option>';
                 }
             } catch (error) {
-                console.error('加载类目失败:', error);
+                console.error('加载分类失败:', error);
             }
         }
 
-        function loadCategoryProbabilitySettings(categories) {
+        async function loadBatchProducts() {
+            try {
+                const response = await fetch('/api/scripts/categories');
+                const data = await response.json();
+                
+                if (data.success && data.products && data.products.length > 0) {
+                    renderProductButtons(data.products, 'batchProductButtons');
+                }
+            } catch (error) {
+                console.error('加载产品失败:', error);
+            }
+        }
+
+        async function loadCategoryProbabilitySettingsByProduct(product) {
+            try {
+                const response = await fetch(`/api/scripts/${encodeURIComponent(product)}/categories`);
+                const data = await response.json();
+                
+                if (data.success && data.categories && data.categories.length > 0) {
+                    loadCategoryProbabilitySettings(data.categories, product);
+                }
+            } catch (error) {
+                console.error('加载分类失败:', error);
+            }
+        }
+
+        function loadCategoryProbabilitySettings(categories, product) {
             const settingsDiv = document.getElementById('categoryProbabilitySettings');
+            
+            const avgProbability = Math.round(100 / categories.length);
             
             let html = '';
             categories.forEach(category => {
                 html += `
                     <div class="probability-row">
                         <span class="probability-label">${category}</span>
-                        <input type="number" class="probability-input" 
-                               data-category="${category}" 
-                               value="0" 
-                               min="0" 
-                               max="100"
-                               onchange="updateTotalProbability()">
+                        <div class="probability-control">
+                            <input type="range" class="probability-slider" 
+                                   data-category="${category}" 
+                                   value="${avgProbability}" 
+                                   min="0" 
+                                   max="100"
+                                   oninput="updateSliderValue(this)">
+                            <input type="number" class="probability-input" 
+                                   data-category="${category}" 
+                                   value="${avgProbability}" 
+                                   min="0" 
+                                   max="100"
+                                   onchange="updateSliderFromInput(this)">
+                        </div>
                     </div>
                 `;
             });
             
             settingsDiv.innerHTML = html;
-            updateTotalProbability();
+            updateTotalCategoryProbability();
         }
 
-        function updateTotalProbability() {
+        function updateSliderValue(slider) {
+            const category = slider.getAttribute('data-category');
+            const input = document.querySelector(`.probability-input[data-category="${category}"]`);
+            input.value = slider.value;
+            updateTotalCategoryProbability();
+        }
+
+        function updateSliderFromInput(input) {
+            const category = input.getAttribute('data-category');
+            const slider = document.querySelector(`.probability-slider[data-category="${category}"]`);
+            slider.value = input.value;
+            updateTotalCategoryProbability();
+        }
+
+        function applyPreset(preset) {
+            const sliders = document.querySelectorAll('.probability-slider');
             const inputs = document.querySelectorAll('.probability-input');
+            
+            if (sliders.length === 0) return;
+            
+            const categories = Array.from(sliders).map(s => s.getAttribute('data-category'));
+            
+            switch(preset) {
+                case 'balanced':
+                    const avg = Math.round(100 / categories.length);
+                    sliders.forEach(slider => {
+                        slider.value = avg;
+                        const category = slider.getAttribute('data-category');
+                        const input = document.querySelector(`.probability-input[data-category="${category}"]`);
+                        if (input) input.value = avg;
+                    });
+                    break;
+                case 'focus':
+                    sliders.forEach((slider, index) => {
+                        const category = slider.getAttribute('data-category');
+                        const input = document.querySelector(`.probability-input[data-category="${category}"]`);
+                        if (index === 0) {
+                            slider.value = 70;
+                            if (input) input.value = 70;
+                        } else if (index === 1) {
+                            slider.value = 20;
+                            if (input) input.value = 20;
+                        } else {
+                            slider.value = 10;
+                            if (input) input.value = 10;
+                        }
+                    });
+                    break;
+                case 'random':
+                    let remaining = 100;
+                    sliders.forEach((slider, index) => {
+                        const category = slider.getAttribute('data-category');
+                        const input = document.querySelector(`.probability-input[data-category="${category}"]`);
+                        if (index === sliders.length - 1) {
+                            slider.value = remaining;
+                            if (input) input.value = remaining;
+                        } else {
+                            const randomValue = Math.floor(Math.random() * (remaining / 2));
+                            slider.value = randomValue;
+                            if (input) input.value = randomValue;
+                            remaining -= randomValue;
+                        }
+                    });
+                    break;
+            }
+            
+            updateTotalCategoryProbability();
+        }
+
+        function updateTotalCategoryProbability() {
+            const inputs = document.querySelectorAll('#categoryProbabilitySettings .probability-input');
             let total = 0;
             
             inputs.forEach(input => {
                 total += parseInt(input.value) || 0;
             });
             
-            document.getElementById('totalProbability').textContent = `总概率：${total}%`;
+            document.getElementById('totalCategoryProbability').textContent = `类目总概率：${total}%`;
+        }
+
+        async function loadCategories() {
+            await loadProducts();
+            await loadBatchProducts();
         }
 
         async function loadScriptsByCategory() {
             const category = document.getElementById('scriptCategorySelect').value;
             const scriptsDisplay = document.getElementById('scriptsDisplay');
             
-            if (!category) {
+            if (!category || !selectedProduct) {
                 scriptsDisplay.innerHTML = `
                     <div class="empty-state">
                         <div class="icon">📝</div>
-                        <div>请先选择类目</div>
+                        <div>请先选择产品和类目</div>
                     </div>
                 `;
                 return;
             }
             
             try {
-                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`);
+                const response = await fetch(`/api/scripts/${encodeURIComponent(selectedProduct)}/${encodeURIComponent(category)}`);
                 const data = await response.json();
                 
                 if (data.success && data.scripts && data.scripts.length > 0) {
@@ -1161,7 +1449,7 @@
                         html += `
                             <div class="script-item">
                                 <span class="script-text">${script}</span>
-                                <button class="delete-script-btn" onclick="deleteScript('${category}', '${script.replace(/'/g, "\\'")}')">删除</button>
+                                <button class="delete-script-btn" onclick="deleteScript('${selectedProduct}', '${category}', '${script.replace(/'/g, "\\'")}')">删除</button>
                             </div>
                         `;
                     });
@@ -1183,6 +1471,11 @@
             const category = document.getElementById('scriptCategorySelect').value;
             const script = document.getElementById('newScriptInput').value.trim();
             
+            if (!selectedProduct) {
+                alert('请先选择产品');
+                return;
+            }
+            
             if (!category) {
                 alert('请选择类目');
                 return;
@@ -1194,7 +1487,7 @@
             }
             
             try {
-                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`, {
+                const response = await fetch(`/api/scripts/${encodeURIComponent(selectedProduct)}/${encodeURIComponent(category)}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1214,13 +1507,13 @@
             }
         }
 
-        async function deleteScript(category, script) {
+        async function deleteScript(product, category, script) {
             if (!confirm(`确定要删除这条话术吗？`)) {
                 return;
             }
             
             try {
-                const response = await fetch(`/api/scripts/${encodeURIComponent(category)}`, {
+                const response = await fetch(`/api/scripts/${encodeURIComponent(product)}/${encodeURIComponent(category)}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
@@ -1244,8 +1537,14 @@
             const stopBatchBtn = document.getElementById('stopBatchBtn');
             const batchStatus = document.getElementById('batchStatus');
             
+            if (!selectedBatchProduct) {
+                batchStatus.textContent = '请先选择产品';
+                batchStatus.className = 'status-text error';
+                return;
+            }
+            
             const categoryProbabilities = {};
-            document.querySelectorAll('.probability-input').forEach(input => {
+            document.querySelectorAll('#categoryProbabilitySettings .probability-input').forEach(input => {
                 const category = input.getAttribute('data-category');
                 const probability = parseInt(input.value) || 0;
                 if (probability > 0) {
@@ -1254,7 +1553,7 @@
             });
             
             if (Object.keys(categoryProbabilities).length === 0) {
-                batchStatus.textContent = '请至少设置一个类目的概率';
+                batchStatus.textContent = '请至少设置一个分类的概率';
                 batchStatus.className = 'status-text error';
                 return;
             }
@@ -1269,7 +1568,10 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ probabilities: categoryProbabilities })
+                    body: JSON.stringify({ 
+                        product: selectedBatchProduct,
+                        category_probabilities: categoryProbabilities
+                    })
                 });
                 const data = await response.json();
                 
