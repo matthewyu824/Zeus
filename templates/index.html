@@ -1356,48 +1356,60 @@
 
         function applyPreset(preset) {
             const sliders = document.querySelectorAll('.probability-slider');
-            const inputs = document.querySelectorAll('.probability-input');
             
             if (sliders.length === 0) return;
             
             const categories = Array.from(sliders).map(s => s.getAttribute('data-category'));
+            const count = sliders.length;
             
             switch(preset) {
                 case 'balanced':
-                    const avg = Math.round(100 / categories.length);
-                    sliders.forEach(slider => {
-                        slider.value = avg;
-                        const category = slider.getAttribute('data-category');
-                        const input = document.querySelector(`.probability-input[data-category="${category}"]`);
-                        if (input) input.value = avg;
-                    });
-                    break;
-                case 'focus':
+                    const avg = Math.floor(100 / count);
+                    const remainder = 100 - (avg * (count - 1));
                     sliders.forEach((slider, index) => {
                         const category = slider.getAttribute('data-category');
                         const input = document.querySelector(`.probability-input[data-category="${category}"]`);
-                        if (index === 0) {
-                            slider.value = 70;
-                            if (input) input.value = 70;
-                        } else if (index === 1) {
-                            slider.value = 20;
-                            if (input) input.value = 20;
-                        } else {
-                            slider.value = 10;
-                            if (input) input.value = 10;
-                        }
+                        const value = (index === count - 1) ? remainder : avg;
+                        slider.value = value;
+                        if (input) input.value = value;
                     });
+                    break;
+                case 'focus':
+                    if (count >= 2) {
+                        const firstValue = Math.min(70, 100 - (count - 1) * 5);
+                        const secondValue = Math.min(20, 100 - firstValue - (count - 2) * 5);
+                        const remaining = 100 - firstValue - secondValue;
+                        const otherValue = Math.floor(remaining / (count - 2));
+                        const otherRemainder = remaining - (otherValue * (count - 3));
+                        
+                        sliders.forEach((slider, index) => {
+                            const category = slider.getAttribute('data-category');
+                            const input = document.querySelector(`.probability-input[data-category="${category}"]`);
+                            let value;
+                            if (index === 0) {
+                                value = firstValue;
+                            } else if (index === 1) {
+                                value = secondValue;
+                            } else if (index === count - 1) {
+                                value = otherRemainder;
+                            } else {
+                                value = otherValue;
+                            }
+                            slider.value = value;
+                            if (input) input.value = value;
+                        });
+                    }
                     break;
                 case 'random':
                     let remaining = 100;
                     sliders.forEach((slider, index) => {
                         const category = slider.getAttribute('data-category');
                         const input = document.querySelector(`.probability-input[data-category="${category}"]`);
-                        if (index === sliders.length - 1) {
+                        if (index === count - 1) {
                             slider.value = remaining;
                             if (input) input.value = remaining;
                         } else {
-                            const randomValue = Math.floor(Math.random() * (remaining / 2));
+                            const randomValue = Math.floor(Math.random() * (remaining - (count - index - 1) * 1));
                             slider.value = randomValue;
                             if (input) input.value = randomValue;
                             remaining -= randomValue;
