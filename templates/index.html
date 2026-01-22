@@ -83,7 +83,7 @@
 
         .main-content {
             flex: 1;
-            padding: 30px;
+            padding: 20px;
             overflow-y: auto;
         }
 
@@ -94,6 +94,54 @@
 
         .content-section.active {
             display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .dashboard-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dashboard-section.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .dashboard-section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dashboard-section-header .icon {
+            font-size: 24px;
+        }
+
+        .dashboard-section-header h3 {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .dashboard-section-content {
+            flex: 1;
+            overflow-y: auto;
+            max-height: calc(100vh - 180px);
         }
 
         @keyframes fadeIn {
@@ -420,12 +468,12 @@
         }
 
         .probability-input {
-            width: 80px;
-            padding: 8px 12px;
+            width: 60px;
+            padding: 6px 8px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-size: 13px;
             color: #fff;
             text-align: center;
         }
@@ -435,13 +483,68 @@
             border-color: #667eea;
         }
 
+        .probability-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .probability-label {
+            min-width: 80px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .probability-control {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .probability-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .probability-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .probability-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
         .product-button {
-            padding: 10px 20px;
+            padding: 8px 14px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
+            border-radius: 6px;
             color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -459,15 +562,15 @@
 
         .preset-buttons {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
         }
 
         .preset-button {
-            padding: 8px 16px;
+            padding: 6px 12px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
+            border-radius: 6px;
             color: rgba(255, 255, 255, 0.7);
             font-size: 13px;
             cursor: pointer;
@@ -502,40 +605,6 @@
             align-items: center;
             gap: 15px;
             flex: 1;
-        }
-
-        .probability-slider {
-            flex: 1;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            outline: none;
-        }
-
-        .probability-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .probability-slider::-webkit-slider-thumb:hover {
-            transform: scale(1.1);
-        }
-
-        .probability-slider::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
         }
 
         .probability-input {
@@ -621,29 +690,17 @@
                 <span class="icon">📍</span>
                 <span>坐标收集</span>
             </div>
-            <div class="nav-item" data-section="send">
+            <div class="nav-item" data-section="message">
                 <span class="icon">💬</span>
-                <span>发送消息</span>
-            </div>
-            <div class="nav-item" data-section="batch">
-                <span class="icon">📢</span>
-                <span>群发模式</span>
-            </div>
-            <div class="nav-item" data-section="devices">
-                <span class="icon">📱</span>
-                <span>设备管理</span>
+                <span>消息控制</span>
             </div>
             <div class="nav-item" data-section="scripts">
                 <span class="icon">📝</span>
                 <span>话术管理</span>
             </div>
-            <div class="nav-item" data-section="batch-control">
-                <span class="icon">🎯</span>
-                <span>群控功能</span>
-            </div>
-            <div class="nav-item" data-section="scheduled">
-                <span class="icon">⏰</span>
-                <span>定期发送</span>
+            <div class="nav-item" data-section="devices">
+                <span class="icon">📱</span>
+                <span>设备管理</span>
             </div>
         </div>
     </div>
@@ -680,52 +737,185 @@
             </div>
         </div>
 
-        <div id="send" class="content-section">
+        <div id="message" class="content-section">
             <div class="section-header">
-                <h2>💬 发送消息</h2>
-                <p>向指定设备发送消息</p>
+                <h2>💬 消息控制</h2>
+                <p>发送消息、群发模式和群控功能</p>
             </div>
-            <div class="card">
-                <div class="card-title">
-                    <span class="icon">📤</span>
-                    <span>发送消息</span>
+            <div class="dashboard-grid">
+                <div class="dashboard-section">
+                    <div class="dashboard-section-header">
+                        <span class="icon">📤</span>
+                        <h3>发送消息</h3>
+                    </div>
+                    <div class="dashboard-section-content">
+                        <div class="input-group" style="margin-bottom: 12px;">
+                            <input type="text" id="messageInput" class="input-field" placeholder="请输入要发送的消息">
+                            <select id="groupSelect" class="input-field" style="flex: 0.5;">
+                                <option value="">选择设备</option>
+                            </select>
+                        </div>
+                        <button id="sendBtn" class="btn btn-success" onclick="sendMessage()" style="width: 100%; margin-bottom: 12px;">
+                            发送消息
+                        </button>
+                        <div id="sendStatus" class="status-text" style="font-size: 13px;">输入消息并选择设备后点击发送</div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <input type="text" id="messageInput" class="input-field" placeholder="请输入要发送的消息">
-                    <select id="groupSelect" class="input-field" style="flex: 0.5;">
-                        <option value="">选择设备</option>
-                    </select>
-                    <button id="sendBtn" class="btn btn-success" onclick="sendMessage()">
-                        发送消息
-                    </button>
+
+                <div class="dashboard-section">
+                    <div class="dashboard-section-header">
+                        <span class="icon">📢</span>
+                        <h3>群发模式</h3>
+                    </div>
+                    <div class="dashboard-section-content">
+                        <div class="info-text" style="margin-bottom: 12px; font-size: 12px;">
+                            <strong>操作流程：</strong>左键点击第1个公共点、复制消息并粘贴到输入框、点击第2个公共点、点击第3个公共点
+                        </div>
+                        <input type="text" id="batchMessageInput" class="input-field" placeholder="输入要群发的消息" style="margin-bottom: 12px;">
+                        <button id="clickAllBtn" class="btn btn-primary" onclick="clickAllCommonPoints()" style="width: 100%;">
+                            群发消息
+                        </button>
+                        <div id="clickAllStatus" class="status-text" style="margin-top: 10px; font-size: 13px;">输入消息后点击群发消息按钮</div>
+                    </div>
                 </div>
-                <div class="status-box">
-                    <div id="sendStatus" class="status-text">输入消息并选择设备后点击发送</div>
+
+                <div class="dashboard-section full-width">
+                    <div class="dashboard-section-header">
+                        <span class="icon">🎯</span>
+                        <h3>群控功能</h3>
+                    </div>
+                    <div class="dashboard-section-content">
+                        <div style="margin-bottom: 15px;">
+                            <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 8px; display: block;">选择产品</label>
+                            <div id="batchProductButtons" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                <div class="empty-state" style="flex: 1; padding: 10px; font-size: 12px;">
+                                    <div class="icon">⏳</div>
+                                    <div>正在加载产品...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="categoryProbabilityCard" style="display: none;">
+                            <div style="margin-bottom: 12px;">
+                                <div class="preset-buttons" style="margin-bottom: 12px;">
+                                    <button class="preset-button" onclick="applyPreset('balanced')" style="padding: 6px 12px; font-size: 12px;">均衡</button>
+                                    <button class="preset-button" onclick="applyPreset('focus')" style="padding: 6px 12px; font-size: 12px;">重点</button>
+                                    <button class="preset-button" onclick="applyPreset('random')" style="padding: 6px 12px; font-size: 12px;">随机</button>
+                                </div>
+                                <div id="categoryProbabilitySettings" style="max-height: 180px; overflow-y: auto; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px;">
+                                    <div class="empty-state" style="padding: 20px;">
+                                        <div class="icon">⏳</div>
+                                        <div>请先选择产品</div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 10px; color: rgba(255,255,255,0.6); font-size: 12px;">
+                                    <span id="totalCategoryProbability">类目总概率：0%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                                <button id="startBatchBtn" class="btn btn-success" onclick="startBatchControl()" style="flex: 1; padding: 10px; font-size: 13px;">
+                                    开始群控
+                                </button>
+                                <button id="stopBatchBtn" class="btn btn-danger" onclick="stopBatchControl()" disabled style="flex: 1; padding: 10px; font-size: 13px;">
+                                    停止群控
+                                </button>
+                            </div>
+                            <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                                <div class="stat-card" style="padding: 12px;">
+                                    <div class="stat-value" id="sentCount" style="font-size: 20px;">0</div>
+                                    <div class="stat-label" style="font-size: 11px;">已发送</div>
+                                </div>
+                                <div class="stat-card" style="padding: 12px;">
+                                    <div class="stat-value" id="currentGroup" style="font-size: 14px;">-</div>
+                                    <div class="stat-label" style="font-size: 11px;">当前设备</div>
+                                </div>
+                                <div class="stat-card" style="padding: 12px;">
+                                    <div class="stat-value" id="currentMessage" style="font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">-</div>
+                                    <div class="stat-label" style="font-size: 11px;">当前消息</div>
+                                </div>
+                            </div>
+                            <div id="batchStatus" class="status-text" style="margin-top: 10px; font-size: 13px;">选择产品并设置分类概率后点击开始群控</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-section">
+                    <div class="dashboard-section-header">
+                        <span class="icon">⏰</span>
+                        <h3>定期发送</h3>
+                    </div>
+                    <div class="dashboard-section-content">
+                        <div style="margin-bottom: 12px;">
+                            <input type="text" id="scheduledMessageInput" class="input-field" placeholder="输入要定期发送的消息" style="margin-bottom: 10px;">
+                            <div style="display: flex; gap: 10px;">
+                                <select id="scheduledGroupSelect" class="input-field" style="flex: 1;">
+                                    <option value="">选择设备</option>
+                                </select>
+                                <input type="number" id="intervalInput" class="input-field" placeholder="间隔(秒)" min="1" value="60" style="width: 100px;">
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                            <button id="startScheduledBtn" class="btn btn-success" onclick="startScheduledSend()" style="flex: 1; padding: 10px; font-size: 13px;">
+                                开始发送
+                            </button>
+                            <button id="stopScheduledBtn" class="btn btn-danger" onclick="stopScheduledSend()" disabled style="flex: 1; padding: 10px; font-size: 13px;">
+                                停止发送
+                            </button>
+                        </div>
+                        <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                            <div class="stat-card" style="padding: 12px;">
+                                <div class="stat-value" id="scheduledSentCount" style="font-size: 20px;">0</div>
+                                <div class="stat-label" style="font-size: 11px;">已发送</div>
+                            </div>
+                            <div class="stat-card" style="padding: 12px;">
+                                <div class="stat-value" id="nextSendTime" style="font-size: 14px;">-</div>
+                                <div class="stat-label" style="font-size: 11px;">下次发送</div>
+                            </div>
+                        </div>
+                        <div id="scheduledStatus" class="status-text" style="margin-top: 10px; font-size: 13px;">输入消息、选择设备并设置时间间隔后点击开始</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div id="batch" class="content-section">
+        <div id="scripts" class="content-section">
             <div class="section-header">
-                <h2>📢 群发模式</h2>
-                <p>使用公共点快速群发消息</p>
+                <h2>📝 话术管理</h2>
+                <p>管理产品话术和分类</p>
             </div>
             <div class="card">
                 <div class="card-title">
-                    <span class="icon">🚀</span>
-                    <span>群发消息</span>
+                    <span class="icon">📝</span>
+                    <span>话术管理</span>
                 </div>
-                <div class="info-text">
-                    <strong>操作流程：</strong>左键点击第1个公共点、复制消息并粘贴到输入框、点击第2个公共点、点击第3个公共点
+                <div style="margin-bottom: 15px;">
+                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 8px; display: block;">选择产品</label>
+                    <div id="productButtons" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <div class="empty-state" style="flex: 1; padding: 10px; font-size: 12px;">
+                            <div class="icon">⏳</div>
+                            <div>正在加载产品...</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <input type="text" id="batchMessageInput" class="input-field" placeholder="输入要群发的消息">
-                    <button id="clickAllBtn" class="btn btn-primary" onclick="clickAllCommonPoints()">
-                        群发消息
-                    </button>
+                <div id="addScriptCard" style="display: none; margin-bottom: 15px;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="scriptCategorySelect" class="input-field" style="flex: 1;" onchange="loadScriptsByCategory()">
+                            <option value="">选择类目</option>
+                        </select>
+                        <input type="text" id="newScriptInput" class="input-field" placeholder="输入新话术" style="flex: 1;">
+                        <button id="addScriptBtn" class="btn btn-primary" onclick="addScript()" style="padding: 8px 16px; font-size: 13px;">
+                            添加
+                        </button>
+                    </div>
                 </div>
-                <div class="status-box">
-                    <div id="clickAllStatus" class="status-text">输入消息后点击群发消息按钮</div>
+                <div id="scriptsListCard" style="display: none;">
+                    <div id="scriptsDisplay" style="max-height: 400px; overflow-y: auto; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px;">
+                        <div class="empty-state" style="padding: 20px;">
+                            <div class="icon">📝</div>
+                            <div>请先选择类目</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -747,169 +937,6 @@
                     <div class="empty-state">
                         <div class="icon">📱</div>
                         <div>暂无设备数据</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="scripts" class="content-section">
-            <div class="section-header">
-                <h2>📝 话术管理</h2>
-                <p>管理话术和类目</p>
-            </div>
-            <div class="card">
-                <div class="card-title">
-                    <span class="icon">🏷️</span>
-                    <span>选择产品</span>
-                </div>
-                <div id="productButtons" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
-                    <div class="empty-state" style="flex: 1; padding: 20px;">
-                        <div class="icon">⏳</div>
-                        <div>正在加载产品...</div>
-                    </div>
-                </div>
-            </div>
-            <div class="card" id="addScriptCard" style="display: none;">
-                <div class="card-title">
-                    <span class="icon">➕</span>
-                    <span>添加话术</span>
-                </div>
-                <div class="input-group">
-                    <select id="scriptCategorySelect" class="input-field" onchange="loadScriptsByCategory()">
-                        <option value="">选择类目</option>
-                    </select>
-                    <input type="text" id="newScriptInput" class="input-field" placeholder="输入新话术">
-                    <button id="addScriptBtn" class="btn btn-primary" onclick="addScript()">
-                        添加话术
-                    </button>
-                </div>
-            </div>
-            <div class="card" id="scriptsListCard" style="display: none;">
-                <div class="card-title">
-                    <span class="icon">📚</span>
-                    <span>话术列表</span>
-                </div>
-                <div id="scriptsDisplay" class="points-display">
-                    <div class="empty-state">
-                        <div class="icon">📝</div>
-                        <div>请先选择类目</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="batch-control" class="content-section">
-            <div class="section-header">
-                <h2>🎯 群控功能</h2>
-                <p>自动群发消息到所有设备</p>
-            </div>
-            <div class="card">
-                <div class="card-title">
-                    <span class="icon">🏷️</span>
-                    <span>选择产品</span>
-                </div>
-                <div id="batchProductButtons" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
-                    <div class="empty-state" style="flex: 1; padding: 20px;">
-                        <div class="icon">⏳</div>
-                        <div>正在加载产品...</div>
-                    </div>
-                </div>
-            </div>
-            <div class="card" id="categoryProbabilityCard" style="display: none;">
-                <div class="card-title">
-                    <span class="icon">⚙️</span>
-                    <span>类目概率设置</span>
-                </div>
-                <div class="preset-buttons">
-                    <button class="preset-button" onclick="applyPreset('balanced')">均衡档</button>
-                    <button class="preset-button" onclick="applyPreset('focus')">重点档</button>
-                    <button class="preset-button" onclick="applyPreset('random')">随机档</button>
-                </div>
-                <div id="categoryProbabilitySettings">
-                    <div class="empty-state">
-                        <div class="icon">⏳</div>
-                        <div>请先选择产品</div>
-                    </div>
-                </div>
-                <div style="margin-top: 15px;">
-                    <span id="totalCategoryProbability" style="color: rgba(255, 255, 255, 0.6); font-size: 14px;">类目总概率：0%</span>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-title">
-                    <span class="icon">🚀</span>
-                    <span>群控操作</span>
-                </div>
-                <div class="input-group">
-                    <button id="startBatchBtn" class="btn btn-success" onclick="startBatchControl()">
-                        开始群控
-                    </button>
-                    <button id="stopBatchBtn" class="btn btn-danger" onclick="stopBatchControl()" disabled>
-                        停止群控
-                    </button>
-                </div>
-                <div class="info-text">
-                    ⚠️ 提示：群控运行时按 <strong>ESC键</strong> 可快速停止
-                </div>
-                <div class="status-box">
-                    <div id="batchStatus" class="status-text">选择产品并设置分类概率后点击开始群控</div>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="sentCount">0</div>
-                        <div class="stat-label">已发送消息数</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="currentGroup">-</div>
-                        <div class="stat-label">当前设备</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="currentMessage">-</div>
-                        <div class="stat-label">当前消息</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="scheduled" class="content-section">
-            <div class="section-header">
-                <h2>⏰ 定期发送</h2>
-                <p>定时向指定设备发送消息</p>
-            </div>
-            <div class="card">
-                <div class="card-title">
-                    <span class="icon">⚙️</span>
-                    <span>设置定期发送</span>
-                </div>
-                <div class="input-group">
-                    <input type="text" id="scheduledMessageInput" class="input-field" placeholder="输入要定期发送的消息">
-                    <select id="scheduledGroupSelect" class="input-field" style="flex: 0.5;">
-                        <option value="">选择设备</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <input type="number" id="intervalInput" class="input-field" placeholder="时间间隔（秒）" min="1" value="60">
-                    <button id="startScheduledBtn" class="btn btn-success" onclick="startScheduledSend()">
-                        开始定期发送
-                    </button>
-                    <button id="stopScheduledBtn" class="btn btn-danger" onclick="stopScheduledSend()" disabled>
-                        停止定期发送
-                    </button>
-                </div>
-                <div class="info-text">
-                    ⚠️ 提示：定期发送运行时按 <strong>ESC键</strong> 可快速停止
-                </div>
-                <div class="status-box">
-                    <div id="scheduledStatus" class="status-text">输入消息、选择设备并设置时间间隔后点击开始</div>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="scheduledSentCount">0</div>
-                        <div class="stat-label">已发送消息数</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="nextSendTime">-</div>
-                        <div class="stat-label">下次发送时间</div>
                     </div>
                 </div>
             </div>
@@ -1836,6 +1863,7 @@
 
         loadGroups();
         loadCategories();
+        loadProducts();
     </script>
 </body>
 </html>
