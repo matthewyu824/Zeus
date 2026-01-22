@@ -698,6 +698,10 @@
                 <span class="icon">📝</span>
                 <span>话术管理</span>
             </div>
+            <div class="nav-item" data-section="batch-messages">
+                <span class="icon">📢</span>
+                <span>群发消息</span>
+            </div>
             <div class="nav-item" data-section="devices">
                 <span class="icon">📱</span>
                 <span>设备管理</span>
@@ -771,11 +775,13 @@
                         <div class="info-text" style="margin-bottom: 12px; font-size: 12px;">
                             <strong>操作流程：</strong>左键点击第1个公共点、复制消息并粘贴到输入框、点击第2个公共点、点击第3个公共点
                         </div>
-                        <input type="text" id="batchMessageInput" class="input-field" placeholder="输入要群发的消息" style="margin-bottom: 12px;">
+                        <select id="batchMessageSelect" class="input-field" style="margin-bottom: 12px;">
+                            <option value="">选择群发消息</option>
+                        </select>
                         <button id="clickAllBtn" class="btn btn-primary" onclick="clickAllCommonPoints()" style="width: 100%;">
                             群发消息
                         </button>
-                        <div id="clickAllStatus" class="status-text" style="margin-top: 10px; font-size: 13px;">输入消息后点击群发消息按钮</div>
+                        <div id="clickAllStatus" class="status-text" style="margin-top: 10px; font-size: 13px;">选择消息后点击群发消息按钮</div>
                     </div>
                 </div>
 
@@ -923,6 +929,38 @@
                             <div class="icon">📝</div>
                             <div>请先选择类目</div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="batch-messages" class="content-section">
+            <div class="section-header">
+                <h2>📢 群发消息管理</h2>
+                <p>管理群发模式中的消息模板</p>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">➕</span>
+                    <span>添加消息</span>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="newBatchMessageInput" class="input-field" placeholder="输入新的群发消息">
+                    <button class="btn btn-success" onclick="addBatchMessage()">添加</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">📋</span>
+                    <span>消息列表</span>
+                </div>
+                <button class="btn btn-primary" onclick="loadBatchMessages()">
+                    刷新消息列表
+                </button>
+                <div id="batchMessagesDisplay" class="points-display" style="max-height: 400px; overflow-y: auto;">
+                    <div class="empty-state">
+                        <div class="icon">📢</div>
+                        <div>暂无群发消息</div>
                     </div>
                 </div>
             </div>
@@ -1142,14 +1180,14 @@
         }
 
         async function clickAllCommonPoints() {
-            const batchMessageInput = document.getElementById('batchMessageInput');
+            const batchMessageSelect = document.getElementById('batchMessageSelect');
             const clickAllBtn = document.getElementById('clickAllBtn');
             const clickAllStatus = document.getElementById('clickAllStatus');
             
-            const message = batchMessageInput.value.trim();
+            const message = batchMessageSelect.value.trim();
             
             if (!message) {
-                clickAllStatus.textContent = '请输入要群发的消息';
+                clickAllStatus.textContent = '请选择要群发的消息';
                 clickAllStatus.className = 'status-text error';
                 return;
             }
@@ -1212,7 +1250,7 @@
                         groupsDisplay.innerHTML = html;
                         
                         groupSelect.innerHTML = '<option value="">选择设备</option>';
-                        scheduledGroupSelect.innerHTML = '<option value="">选择设备</option>';
+                        scheduledGroupSelect.innerHTML = '<option value="random">随机</option><option value="">选择设备</option>';
                         groupIds.forEach(groupId => {
                             groupSelect.innerHTML += `<option value="${groupId}">${groupId}</option>`;
                             scheduledGroupSelect.innerHTML += `<option value="${groupId}">${groupId}</option>`;
@@ -1225,7 +1263,7 @@
                             </div>
                         `;
                         groupSelect.innerHTML = '<option value="">选择设备</option>';
-                        scheduledGroupSelect.innerHTML = '<option value="">选择设备</option>';
+                        scheduledGroupSelect.innerHTML = '<option value="random">随机</option><option value="">选择设备</option>';
                     }
                 } else {
                     groupsDisplay.innerHTML = `
@@ -1235,10 +1273,133 @@
                         </div>
                     `;
                     groupSelect.innerHTML = '<option value="">选择设备</option>';
-                    scheduledGroupSelect.innerHTML = '<option value="">选择设备</option>';
+                    scheduledGroupSelect.innerHTML = '<option value="random">随机</option><option value="">选择设备</option>';
                 }
             } catch (error) {
                 console.error('加载设备列表失败:', error);
+            }
+        }
+
+        async function loadBatchMessages() {
+            try {
+                const response = await fetch('/api/batch-messages');
+                const data = await response.json();
+                
+                const batchMessagesDisplay = document.getElementById('batchMessagesDisplay');
+                const batchMessageSelect = document.getElementById('batchMessageSelect');
+                
+                if (data.success && data.messages && data.messages.length > 0) {
+                    let html = '';
+                    data.messages.forEach((message, index) => {
+                        html += `
+                            <div class="script-item">
+                                <div class="script-text">${index + 1}. ${message}</div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="delete-script-btn" onclick="editBatchMessage('${message.replace(/'/g, "\\'")}')">编辑</button>
+                                    <button class="delete-script-btn" onclick="deleteBatchMessage('${message.replace(/'/g, "\\'")}')">删除</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    batchMessagesDisplay.innerHTML = html;
+                    
+                    batchMessageSelect.innerHTML = '<option value="">选择群发消息</option>';
+                    data.messages.forEach(message => {
+                        batchMessageSelect.innerHTML += `<option value="${message}">${message}</option>`;
+                    });
+                } else {
+                    batchMessagesDisplay.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">📢</div>
+                            <div>暂无群发消息</div>
+                        </div>
+                    `;
+                    batchMessageSelect.innerHTML = '<option value="">选择群发消息</option>';
+                }
+            } catch (error) {
+                console.error('加载群发消息失败:', error);
+            }
+        }
+
+        async function addBatchMessage() {
+            const newBatchMessageInput = document.getElementById('newBatchMessageInput');
+            const message = newBatchMessageInput.value.trim();
+            
+            if (!message) {
+                alert('请输入消息内容');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/batch-messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    newBatchMessageInput.value = '';
+                    loadBatchMessages();
+                } else {
+                    alert('添加失败：' + data.message);
+                }
+            } catch (error) {
+                alert('添加失败：' + error.message);
+            }
+        }
+
+        async function editBatchMessage(oldMessage) {
+            const newMessage = prompt('请输入新的消息内容：', oldMessage);
+            
+            if (newMessage === null || newMessage.trim() === '') {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/batch-messages', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ old_message: oldMessage, new_message: newMessage.trim() })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadBatchMessages();
+                } else {
+                    alert('修改失败：' + data.message);
+                }
+            } catch (error) {
+                alert('修改失败：' + error.message);
+            }
+        }
+
+        async function deleteBatchMessage(message) {
+            if (!confirm('确定要删除这条消息吗？')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/batch-messages', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadBatchMessages();
+                } else {
+                    alert('删除失败：' + data.message);
+                }
+            } catch (error) {
+                alert('删除失败：' + error.message);
             }
         }
 
@@ -1846,7 +2007,7 @@
                     
                     if (data.status === 'running') {
                         scheduledStatus.className = 'status-text';
-                    } else if (data.status === 'stopped') {
+                    } else if (data.status === 'idle' || data.status === 'stopped') {
                         scheduledStatus.className = 'status-text success';
                         startScheduledBtn.disabled = false;
                         stopScheduledBtn.disabled = true;
@@ -1886,6 +2047,7 @@
         loadGroups();
         loadCategories();
         loadProducts();
+        loadBatchMessages();
     </script>
 </body>
 </html>

@@ -309,6 +309,86 @@ def delete_script(product, category):
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
+@app.route('/api/batch-messages', methods=['GET'])
+def get_batch_messages():
+    try:
+        with open('群发消息.json', 'r', encoding='utf-8') as f:
+            messages = json.load(f)
+        return jsonify({"success": True, "messages": messages})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/batch-messages', methods=['POST'])
+def add_batch_message():
+    try:
+        data = request.json
+        message = data.get('message', '')
+        
+        if not message:
+            return jsonify({"success": False, "message": "消息内容不能为空"})
+        
+        with open('群发消息.json', 'r', encoding='utf-8') as f:
+            messages = json.load(f)
+        
+        messages.append(message)
+        
+        with open('群发消息.json', 'w', encoding='utf-8') as f:
+            json.dump(messages, f, ensure_ascii=False, indent=2)
+        
+        return jsonify({"success": True, "message": "群发消息添加成功"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/batch-messages', methods=['PUT'])
+def update_batch_message():
+    try:
+        data = request.json
+        old_message = data.get('old_message', '')
+        new_message = data.get('new_message', '')
+        
+        if not old_message or not new_message:
+            return jsonify({"success": False, "message": "消息内容不能为空"})
+        
+        with open('群发消息.json', 'r', encoding='utf-8') as f:
+            messages = json.load(f)
+        
+        if old_message not in messages:
+            return jsonify({"success": False, "message": "原消息不存在"})
+        
+        index = messages.index(old_message)
+        messages[index] = new_message
+        
+        with open('群发消息.json', 'w', encoding='utf-8') as f:
+            json.dump(messages, f, ensure_ascii=False, indent=2)
+        
+        return jsonify({"success": True, "message": "群发消息修改成功"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/batch-messages', methods=['DELETE'])
+def delete_batch_message():
+    try:
+        data = request.json
+        message = data.get('message', '')
+        
+        if not message:
+            return jsonify({"success": False, "message": "消息内容不能为空"})
+        
+        with open('群发消息.json', 'r', encoding='utf-8') as f:
+            messages = json.load(f)
+        
+        if message not in messages:
+            return jsonify({"success": False, "message": "消息不存在"})
+        
+        messages.remove(message)
+        
+        with open('群发消息.json', 'w', encoding='utf-8') as f:
+            json.dump(messages, f, ensure_ascii=False, indent=2)
+        
+        return jsonify({"success": True, "message": "群发消息删除成功"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
 @app.route('/api/batch/start', methods=['POST'])
 def start_batch_control():
     global batch_control_thread, batch_control_running, keyboard_listener
@@ -499,7 +579,7 @@ def start_scheduled_send():
         if groups_data is None:
             return jsonify({"success": False, "message": "无法读取设备数据文件"})
         
-        if group_id not in groups_data.get("group_points", {}):
+        if group_id != 'random' and group_id not in groups_data.get("group_points", {}):
             return jsonify({"success": False, "message": f"设备 {group_id} 不存在"})
         
         scheduled_send_running = True
@@ -538,6 +618,23 @@ def scheduled_send_worker(message, group_id, interval):
         scheduled_send_status["sent_count"] = 0
         scheduled_send_status["message"] = f"开始定期发送消息到设备 {group_id}，间隔 {interval} 秒"
         
+        groups_data = collector.load_groups()
+        if groups_data is None:
+            scheduled_send_status["status"] = "error"
+            scheduled_send_status["message"] = "无法读取设备数据文件"
+            scheduled_send_running = False
+            return
+        
+        group_ids = list(groups_data.get("group_points", {}).keys())
+        if not group_ids:
+            scheduled_send_status["status"] = "error"
+            scheduled_send_status["message"] = "没有可用的设备"
+            scheduled_send_running = False
+            return
+        
+        if group_id == 'random':
+            scheduled_send_status["message"] = f"开始随机定期发送消息，间隔 {interval} 秒"
+        
         while scheduled_send_running:
             next_send_time = time.time() + interval
             scheduled_send_status["next_send_time"] = next_send_time
@@ -548,12 +645,20 @@ def scheduled_send_worker(message, group_id, interval):
             if not scheduled_send_running:
                 break
             
-            scheduled_send_status["message"] = f"正在向设备 {group_id} 发送消息：{message}"
+            target_group_id = group_id
+            if group_id == 'random':
+                target_group_id = random.choice(group_ids)
+                scheduled_send_status["message"] = f"正在向随机设备 {target_group_id} 发送消息：{message}"
+            else:
+                scheduled_send_status["message"] = f"正在向设备 {group_id} 发送消息：{message}"
             
             try:
-                send_message(message, group_id)
+                send_message(message, target_group_id)
                 scheduled_send_status["sent_count"] += 1
-                scheduled_send_status["message"] = f"消息已发送到设备 {group_id}，共发送 {scheduled_send_status['sent_count']} 次"
+                if group_id == 'random':
+                    scheduled_send_status["message"] = f"消息已发送到随机设备 {target_group_id}，共发送 {scheduled_send_status['sent_count']} 次"
+                else:
+                    scheduled_send_status["message"] = f"消息已发送到设备 {group_id}，共发送 {scheduled_send_status['sent_count']} 次"
             except Exception as e:
                 scheduled_send_status["message"] = f"发送失败：{str(e)}"
         
