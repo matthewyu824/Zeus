@@ -813,6 +813,14 @@
                             </div>
                         </div>
                         <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <div style="margin-bottom: 12px;">
+                                <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 8px; display: block;">操作速度</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="speed-btn-batch product-button" data-speed="快" onclick="selectSpeed('快', 'batch')">快 (0.3s)</button>
+                                    <button class="speed-btn-batch product-button active" data-speed="中" onclick="selectSpeed('中', 'batch')">中 (0.5s)</button>
+                                    <button class="speed-btn-batch product-button" data-speed="慢" onclick="selectSpeed('慢', 'batch')">慢 (0.7s)</button>
+                                </div>
+                            </div>
                             <div style="display: flex; gap: 10px; margin-bottom: 12px;">
                                 <button id="startBatchBtn" class="btn btn-success" onclick="startBatchControl()" style="flex: 1; padding: 10px; font-size: 13px;">
                                     开始群控
@@ -946,6 +954,19 @@
     <script>
         let statusInterval = null;
         let batchStatusInterval = null;
+        let batchSpeed = '中';
+
+        function selectSpeed(speed, type) {
+            if (type === 'batch') {
+                batchSpeed = speed;
+                document.querySelectorAll('.speed-btn-batch').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.getAttribute('data-speed') === speed) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+        }
 
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', function() {
@@ -1101,7 +1122,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ message: message, group_id: groupId })
+                    body: JSON.stringify({ message: message, group_id: groupId, speed: '中' })
                 });
                 const data = await response.json();
                 
@@ -1142,7 +1163,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ message: message })
+                    body: JSON.stringify({ message: message, speed: '中' })
                 });
                 const data = await response.json();
                 
@@ -1609,7 +1630,8 @@
                     },
                     body: JSON.stringify({ 
                         product: selectedBatchProduct,
-                        category_probabilities: categoryProbabilities
+                        category_probabilities: categoryProbabilities,
+                        speed: batchSpeed
                     })
                 });
                 const data = await response.json();
@@ -1685,7 +1707,7 @@
                     
                     if (data.status === 'running') {
                         batchStatus.className = 'status-text';
-                    } else if (data.status === 'stopped') {
+                    } else if (data.status === 'idle' || data.status === 'stopped') {
                         batchStatus.className = 'status-text success';
                         startBatchBtn.disabled = false;
                         stopBatchBtn.disabled = true;

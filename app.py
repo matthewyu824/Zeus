@@ -145,6 +145,7 @@ def send_message_api():
     data = request.json
     message = data.get('message', '')
     group_id = data.get('group_id', '')
+    speed = data.get('speed', '中')
     
     if not message:
         return jsonify({"success": False, "message": "消息不能为空"})
@@ -153,7 +154,7 @@ def send_message_api():
         return jsonify({"success": False, "message": "设备ID不能为空"})
     
     try:
-        send_message(message, group_id)
+        send_message(message, group_id, speed)
         return jsonify({"success": True, "message": "消息发送成功"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
@@ -318,6 +319,7 @@ def start_batch_control():
     data = request.json
     product = data.get('product', '')
     category_probabilities = data.get('category_probabilities', {})
+    speed = data.get('speed', '中')
     
     if not product:
         return jsonify({"success": False, "message": "产品不能为空"})
@@ -344,7 +346,7 @@ def start_batch_control():
                 return jsonify({"success": False, "message": f"产品 {product} 中的分类 {category} 不存在"})
         
         batch_control_running = True
-        batch_control_thread = threading.Thread(target=batch_control_worker, args=(product, category_probabilities))
+        batch_control_thread = threading.Thread(target=batch_control_worker, args=(product, category_probabilities, speed))
         batch_control_thread.start()
         
         return jsonify({"success": True, "message": f"开始群控，按ESC键可快速停止"})
@@ -356,11 +358,12 @@ def click_all_common_points():
     try:
         data = request.json
         message = data.get('message', '')
+        speed = data.get('speed', '中')
         
         if not message:
             return jsonify({"success": False, "message": "消息内容不能为空"})
         
-        send_message_all(message)
+        send_message_all(message, speed)
         return jsonify({"success": True, "message": "群发消息完成"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
@@ -380,7 +383,7 @@ def stop_batch_control():
 def get_batch_status():
     return jsonify(batch_control_status)
 
-def batch_control_worker(product, category_probabilities):
+def batch_control_worker(product, category_probabilities, speed):
     global batch_control_status, batch_control_running, global_keyboard_listener
     
     if global_keyboard_listener is None:
@@ -454,7 +457,7 @@ def batch_control_worker(product, category_probabilities):
                 batch_control_status["message"] = f"正在向设备 {group_id} 发送消息（{product} - {selected_category}）：{message}"
                 
                 try:
-                    send_message(message, group_id)
+                    send_message(message, group_id, speed)
                     batch_control_status["sent_count"] += 1
                 except Exception as e:
                     batch_control_status["message"] = f"发送失败：{str(e)}"

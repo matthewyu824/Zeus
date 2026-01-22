@@ -167,7 +167,7 @@ def execute_clicks_from_file():
     
     collector.execute_clicks(points)
 
-def send_message(message, group_id):
+def send_message(message, group_id, speed='中'):
     collector = PointCollector()
     
     groups_data = collector.load_groups()
@@ -193,41 +193,28 @@ def send_message(message, group_id):
     
     group_specific = group_points[group_id]
     
+    speed_map = {'快': 0.3, '中': 0.5, '慢': 0.7}
+    sleep_time = speed_map.get(speed, 0.5)
+    
     print(f"\n发送消息: {message}")
     print(f"使用组 {group_id} 的标注点")
-    
-    # x, y = group_specific[0]
-    # print(f"点击起始点（组{group_id} 点1）: ({x}, {y})")
-    # pyautogui.click(x, y)
-    # time.sleep(1)
-    
-    # x, y = common_points[0]
-    # print(f"点击输入框（公共点1）: ({x}, {y})")
-    # pyautogui.click(x, y)
-    # time.sleep(1)
-    
-
-    
-    # x, y = common_points[1]
-    # print(f"点击第2个位置（公共点2）: ({x}, {y})")
-    # pyautogui.click(x, y)
-    # time.sleep(1)
+    print(f"速度设置: {speed} (sleep_time={sleep_time})")
     
     x, y = group_specific[0]
     print(f"点击第1个位置（组{group_id} 点1）: ({x}, {y})")
     pyautogui.click(x, y)
-    time.sleep(0.3)
+    time.sleep(sleep_time)
 
     print(f"输入文字: {message}")
     pyperclip.copy(message)
     pyautogui.hotkey('ctrl', 'v')
-    time.sleep(0.3)
+    time.sleep(sleep_time)
     
     x, y = group_specific[1]
 
     print(f"点击第2个位置（组{group_id} 点2）: ({x}, {y})")
     pyautogui.click(x, y)
-    time.sleep(0.3)
+    time.sleep(sleep_time)
 
     x, y = group_specific[2]
 
@@ -237,7 +224,7 @@ def send_message(message, group_id):
     
     print("\n消息发送完成！")
 
-def send_message_all(message):
+def send_message_all(message, speed='中'):
     collector = PointCollector()
     
     groups_data = collector.load_groups()
@@ -252,28 +239,32 @@ def send_message_all(message):
         print("错误：需要至少3个公共点")
         return
     
+    speed_map = {'快': 0.3, '中': 0.5, '慢': 0.7}
+    sleep_time = speed_map.get(speed, 0.5)
+    
     print(f"\n开始群发消息...")
     print(f"消息内容：{message}")
+    print(f"速度设置: {speed} (sleep_time={sleep_time})")
     
     x, y = common_points[0]
     print(f"第一步：左键点击第1个公共点: ({x}, {y})")
     pyautogui.click(x, y)
-    time.sleep(0.5)
+    time.sleep(sleep_time)
     
     print(f"第二步：复制消息并粘贴到输入框")
     pyperclip.copy(message)
     pyautogui.hotkey('ctrl', 'v')
-    time.sleep(0.5)
+    time.sleep(sleep_time)
     
     x, y = common_points[1]
     print(f"第三步：点击第2个公共点: ({x}, {y})")
     pyautogui.click(x, y)
-    time.sleep(0.5)
+    time.sleep(sleep_time)
     
     x, y = common_points[2]
     print(f"第四步：点击第3个公共点: ({x}, {y})")
     pyautogui.click(x, y)
-    time.sleep(0.5)
+    time.sleep(sleep_time)
     
     print("\n群发消息完成！")
 
@@ -307,10 +298,25 @@ def main():
     elif choice == "3":
         message = input("请输入要发送的消息: ").strip()
         group_id = input("请输入组ID: ").strip()
-        send_message(message, group_id)
+        print("\n请选择速度：")
+        print("1. 快 (0.3秒)")
+        print("2. 中 (0.5秒)")
+        print("3. 慢 (0.7秒)")
+        speed_choice = input("请输入速度选项 (1, 2 或 3，默认为2): ").strip()
+        speed_map = {'1': '快', '2': '中', '3': '慢'}
+        speed = speed_map.get(speed_choice, '中')
+        send_message(message, group_id, speed)
         
     elif choice == "4":
-        send_message_all()
+        message = input("请输入要发送的消息: ").strip()
+        print("\n请选择速度：")
+        print("1. 快 (0.3秒)")
+        print("2. 中 (0.5秒)")
+        print("3. 慢 (0.7秒)")
+        speed_choice = input("请输入速度选项 (1, 2 或 3，默认为2): ").strip()
+        speed_map = {'1': '快', '2': '中', '3': '慢'}
+        speed = speed_map.get(speed_choice, '中')
+        send_message_all(message, speed)
         
     elif choice == "5":
         print("\n=== 组信息 ===")
