@@ -437,13 +437,17 @@ def start_batch_control():
 def click_all_common_points():
     try:
         data = request.json
+        group_id = data.get('group_id', '')
         message = data.get('message', '')
         speed = data.get('speed', '中')
+        
+        if not group_id:
+            return jsonify({"success": False, "message": "设备ID不能为空"})
         
         if not message:
             return jsonify({"success": False, "message": "消息内容不能为空"})
         
-        send_message_all(message, speed)
+        send_message_all(message, group_id, speed)
         return jsonify({"success": True, "message": "群发消息完成"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})

@@ -224,7 +224,7 @@ def send_message(message, group_id, speed='中'):
     
     print("\n消息发送完成！")
 
-def send_message_all(message, speed='中'):
+def send_message_all(message, group_id, speed='中'):
     collector = PointCollector()
     
     groups_data = collector.load_groups()
@@ -233,21 +233,28 @@ def send_message_all(message, speed='中'):
         print("错误：无法读取组数据文件")
         return
     
-    common_points = groups_data.get("common_points", [])
+    group_points = groups_data.get("group_points", {})
     
-    if len(common_points) < 3:
-        print("错误：需要至少3个公共点")
+    if group_id not in group_points:
+        print(f"错误：设备 {group_id} 不存在")
+        return
+    
+    points = group_points[group_id]
+    
+    if len(points) < 3:
+        print(f"错误：设备 {group_id} 需要至少3个点")
         return
     
     speed_map = {'快': 0.3, '中': 0.5, '慢': 0.7}
     sleep_time = speed_map.get(speed, 0.5)
     
     print(f"\n开始群发消息...")
+    print(f"设备ID：{group_id}")
     print(f"消息内容：{message}")
     print(f"速度设置: {speed} (sleep_time={sleep_time})")
     
-    x, y = common_points[0]
-    print(f"第一步：左键点击第1个公共点: ({x}, {y})")
+    x, y = points[0]
+    print(f"第一步：左键点击第1个点: ({x}, {y})")
     pyautogui.click(x, y)
     time.sleep(sleep_time)
     
@@ -256,13 +263,13 @@ def send_message_all(message, speed='中'):
     pyautogui.hotkey('ctrl', 'v')
     time.sleep(sleep_time)
     
-    x, y = common_points[1]
-    print(f"第三步：点击第2个公共点: ({x}, {y})")
+    x, y = points[1]
+    print(f"第三步：点击第2个点: ({x}, {y})")
     pyautogui.click(x, y)
     time.sleep(sleep_time)
     
-    x, y = common_points[2]
-    print(f"第四步：点击第3个公共点: ({x}, {y})")
+    x, y = points[2]
+    print(f"第四步：点击第3个点: ({x}, {y})")
     pyautogui.click(x, y)
     time.sleep(sleep_time)
     
