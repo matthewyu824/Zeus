@@ -150,12 +150,22 @@ def send_message_api():
     if not message:
         return jsonify({"success": False, "message": "消息不能为空"})
     
-    if not group_id:
-        return jsonify({"success": False, "message": "设备ID不能为空"})
-    
     try:
-        send_message(message, group_id, speed)
-        return jsonify({"success": True, "message": "消息发送成功"})
+        if not group_id or group_id == 'random':
+            groups_data = collector.load_groups()
+            if groups_data is None:
+                return jsonify({"success": False, "message": "无法读取设备数据文件"})
+            
+            group_ids = list(groups_data.get("group_points", {}).keys())
+            if not group_ids:
+                return jsonify({"success": False, "message": "没有可用的设备"})
+            
+            target_group_id = random.choice(group_ids)
+            send_message(message, target_group_id, speed)
+            return jsonify({"success": True, "message": f"消息已发送到随机设备 {target_group_id}"})
+        else:
+            send_message(message, group_id, speed)
+            return jsonify({"success": True, "message": "消息发送成功"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 

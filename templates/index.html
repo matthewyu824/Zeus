@@ -756,13 +756,13 @@
                         <div class="input-group" style="margin-bottom: 12px;">
                             <input type="text" id="messageInput" class="input-field" placeholder="请输入要发送的消息">
                             <select id="groupSelect" class="input-field" style="flex: 0.5;">
-                                <option value="">选择设备</option>
+                                <option value="random">随机设备</option>
                             </select>
                         </div>
                         <button id="sendBtn" class="btn btn-success" onclick="sendMessage()" style="width: 100%; margin-bottom: 12px;">
                             发送消息
                         </button>
-                        <div id="sendStatus" class="status-text" style="font-size: 13px;">输入消息并选择设备后点击发送</div>
+                        <div id="sendStatus" class="status-text" style="font-size: 13px;">输入消息后点击发送，默认随机设备</div>
                     </div>
                 </div>
 
@@ -778,13 +778,14 @@
                         <select id="batchDeviceSelect" class="input-field" style="margin-bottom: 12px;">
                             <option value="">选择设备</option>
                         </select>
+                        <input type="text" id="batchMessageInput" class="input-field" placeholder="或直接输入要发送的消息" style="margin-bottom: 12px;">
                         <select id="batchMessageSelect" class="input-field" style="margin-bottom: 12px;">
                             <option value="">选择群发消息</option>
                         </select>
                         <button id="clickAllBtn" class="btn btn-primary" onclick="clickAllCommonPoints()" style="width: 100%;">
                             群发消息
                         </button>
-                        <div id="clickAllStatus" class="status-text" style="margin-top: 10px; font-size: 13px;">选择设备和消息后点击群发消息按钮</div>
+                        <div id="clickAllStatus" class="status-text" style="margin-top: 10px; font-size: 13px;">选择设备后，可直接输入消息或选择预设消息</div>
                     </div>
                 </div>
 
@@ -867,7 +868,7 @@
                             <input type="text" id="scheduledMessageInput" class="input-field" placeholder="输入要定期发送的消息" style="margin-bottom: 10px;">
                             <div style="display: flex; gap: 10px;">
                                 <select id="scheduledGroupSelect" class="input-field" style="flex: 1;">
-                                    <option value="">选择设备</option>
+                                    <option value="random">随机设备</option>
                                 </select>
                                 <input type="number" id="intervalInput" class="input-field" placeholder="间隔(秒)" min="1" value="60" style="width: 100px;">
                             </div>
@@ -1148,12 +1149,6 @@
                 return;
             }
             
-            if (!groupId) {
-                sendStatus.textContent = '请选择设备';
-                sendStatus.className = 'status-text error';
-                return;
-            }
-            
             sendBtn.disabled = true;
             sendStatus.innerHTML = '<span class="loading"></span>正在发送消息...';
             
@@ -1185,11 +1180,15 @@
         async function clickAllCommonPoints() {
             const batchDeviceSelect = document.getElementById('batchDeviceSelect');
             const batchMessageSelect = document.getElementById('batchMessageSelect');
+            const batchMessageInput = document.getElementById('batchMessageInput');
             const clickAllBtn = document.getElementById('clickAllBtn');
             const clickAllStatus = document.getElementById('clickAllStatus');
             
             const groupId = batchDeviceSelect.value.trim();
-            const message = batchMessageSelect.value.trim();
+            const selectedMessage = batchMessageSelect.value.trim();
+            const inputMessage = batchMessageInput.value.trim();
+            
+            const message = inputMessage || selectedMessage;
             
             if (!groupId) {
                 clickAllStatus.textContent = '请选择设备';
@@ -1198,7 +1197,7 @@
             }
             
             if (!message) {
-                clickAllStatus.textContent = '请选择要群发的消息';
+                clickAllStatus.textContent = '请输入或选择要群发的消息';
                 clickAllStatus.className = 'status-text error';
                 return;
             }
@@ -1260,8 +1259,8 @@
                         html += '</div>';
                         groupsDisplay.innerHTML = html;
                         
-                        groupSelect.innerHTML = '<option value="">选择设备</option>';
-                        scheduledGroupSelect.innerHTML = '<option value="random">随机</option><option value="">选择设备</option>';
+                        groupSelect.innerHTML = '<option value="random">随机设备</option>';
+                        scheduledGroupSelect.innerHTML = '<option value="random">随机设备</option>';
                         batchDeviceSelect.innerHTML = '<option value="">选择设备</option>';
                         groupIds.forEach(groupId => {
                             groupSelect.innerHTML += `<option value="${groupId}">${groupId}</option>`;
@@ -1275,8 +1274,8 @@
                                 <div>暂无设备数据</div>
                             </div>
                         `;
-                        groupSelect.innerHTML = '<option value="">选择设备</option>';
-                        scheduledGroupSelect.innerHTML = '<option value="random">随机</option><option value="">选择设备</option>';
+                        groupSelect.innerHTML = '<option value="random">随机设备</option>';
+                        scheduledGroupSelect.innerHTML = '<option value="random">随机设备</option>';
                         batchDeviceSelect.innerHTML = '<option value="">选择设备</option>';
                     }
                 } else {
@@ -1286,8 +1285,8 @@
                             <div>暂无设备数据</div>
                         </div>
                     `;
-                    groupSelect.innerHTML = '<option value="">选择设备</option>';
-                    scheduledGroupSelect.innerHTML = '<option value="random">随机</option><option value="">选择设备</option>';
+                    groupSelect.innerHTML = '<option value="random">随机设备</option>';
+                    scheduledGroupSelect.innerHTML = '<option value="random">随机设备</option>';
                     batchDeviceSelect.innerHTML = '<option value="">选择设备</option>';
                 }
             } catch (error) {
@@ -2063,6 +2062,21 @@
         loadCategories();
         loadProducts();
         loadBatchMessages();
+
+        const batchMessageInput = document.getElementById('batchMessageInput');
+        const batchMessageSelect = document.getElementById('batchMessageSelect');
+
+        batchMessageInput.addEventListener('input', function() {
+            if (this.value.trim()) {
+                batchMessageSelect.value = '';
+            }
+        });
+
+        batchMessageSelect.addEventListener('change', function() {
+            if (this.value) {
+                batchMessageInput.value = '';
+            }
+        });
     </script>
 </body>
 </html>
