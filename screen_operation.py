@@ -295,12 +295,12 @@ def enter_group_mode():
     
     x, y = common_points[0]
     print(f"第一步：左键点击公共点1: ({x}, {y})")
-    pyautogui.click(x, y, button='right')
+    pyautogui.click(x, y, button='left')
     time.sleep(0.5)
     
     x, y = common_points[1]
     print(f"第二步：左键点击公共点2: ({x}, {y})")
-    pyautogui.click(x, y, button='right')
+    pyautogui.click(x, y, button='left')
     time.sleep(0.5)
     
     x, y = common_points[2]
