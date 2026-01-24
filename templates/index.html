@@ -721,7 +721,7 @@
                     <span>收集公共点</span>
                 </div>
                 <button id="collectCommonBtn" class="btn btn-primary" onclick="startCollectCommon()">
-                    收集公共点（6个点）
+                    收集公共点（4个点）
                 </button>
                 <div class="status-box">
                     <div id="collectStatus" class="status-text">点击按钮开始收集坐标点</div>
@@ -775,6 +775,15 @@
                         <div class="info-text" style="margin-bottom: 12px; font-size: 12px;">
                             <strong>操作流程：</strong>选择设备和消息后，系统会自动使用该设备的三个点进行操作
                         </div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                            <button id="enterGroupModeBtn" class="btn btn-primary" onclick="enterGroupMode()" style="flex: 1;">
+                                进入群发
+                            </button>
+                            <button id="exitGroupModeBtn" class="btn btn-danger" onclick="exitGroupMode()" style="flex: 1;">
+                                退出群发
+                            </button>
+                        </div>
+                        <div id="groupModeStatus" class="status-text" style="margin-bottom: 12px; font-size: 13px;">点击按钮执行群发模式操作</div>
                         <select id="batchDeviceSelect" class="input-field" style="margin-bottom: 12px;">
                             <option value="">选择设备</option>
                         </select>
@@ -782,7 +791,7 @@
                         <select id="batchMessageSelect" class="input-field" style="margin-bottom: 12px;">
                             <option value="">选择群发消息</option>
                         </select>
-                        <button id="clickAllBtn" class="btn btn-primary" onclick="clickAllCommonPoints()" style="width: 100%;">
+                        <button id="clickAllBtn" class="btn btn-success" onclick="clickAllCommonPoints()" style="width: 100%;">
                             群发消息
                         </button>
                         <div id="clickAllStatus" class="status-text" style="margin-top: 10px; font-size: 13px;">选择设备后，可直接输入消息或选择预设消息</div>
@@ -1228,6 +1237,68 @@
             }
             
             clickAllBtn.disabled = false;
+        }
+
+        async function enterGroupMode() {
+            const enterGroupModeBtn = document.getElementById('enterGroupModeBtn');
+            const groupModeStatus = document.getElementById('groupModeStatus');
+            
+            enterGroupModeBtn.disabled = true;
+            groupModeStatus.innerHTML = '<span class="loading"></span>正在进入群发模式...';
+            
+            try {
+                const response = await fetch('/api/group-mode/enter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    groupModeStatus.textContent = data.message;
+                    groupModeStatus.className = 'status-text success';
+                } else {
+                    groupModeStatus.textContent = data.message;
+                    groupModeStatus.className = 'status-text error';
+                }
+            } catch (error) {
+                groupModeStatus.textContent = '进入群发模式失败：' + error.message;
+                groupModeStatus.className = 'status-text error';
+            }
+            
+            enterGroupModeBtn.disabled = false;
+        }
+
+        async function exitGroupMode() {
+            const exitGroupModeBtn = document.getElementById('exitGroupModeBtn');
+            const groupModeStatus = document.getElementById('groupModeStatus');
+            
+            exitGroupModeBtn.disabled = true;
+            groupModeStatus.innerHTML = '<span class="loading"></span>正在退出群发模式...';
+            
+            try {
+                const response = await fetch('/api/group-mode/exit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    groupModeStatus.textContent = data.message;
+                    groupModeStatus.className = 'status-text success';
+                } else {
+                    groupModeStatus.textContent = data.message;
+                    groupModeStatus.className = 'status-text error';
+                }
+            } catch (error) {
+                groupModeStatus.textContent = '退出群发模式失败：' + error.message;
+                groupModeStatus.className = 'status-text error';
+            }
+            
+            exitGroupModeBtn.disabled = false;
         }
 
         async function loadGroups() {

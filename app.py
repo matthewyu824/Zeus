@@ -4,7 +4,7 @@ import json
 import random
 import time
 from pynput import keyboard
-from screen_operation import PointCollector, send_message, send_message_all
+from screen_operation import PointCollector, send_message, send_message_all, enter_group_mode, exit_group_mode
 
 app = Flask(__name__)
 
@@ -42,14 +42,14 @@ def collect_common_points_background():
     collecting_status["status"] = "collecting"
     collecting_status["type"] = "common"
     collecting_status["points"] = []
-    collecting_status["message"] = "开始收集公共点（6个点），请在屏幕上点击位置..."
+    collecting_status["message"] = "开始收集公共点（4个点），请在屏幕上点击位置..."
     
     def on_click(x, y, button, pressed):
         if pressed and button.name == 'left':
             collecting_status["points"].append((x, y))
             collecting_status["message"] = f"已收集第 {len(collecting_status['points'])} 个公共点: ({x}, {y})"
             
-            if len(collecting_status["points"]) >= 6:
+            if len(collecting_status["points"]) >= 4:
                 collecting_status["status"] = "completed"
                 collecting_status["message"] = "公共点收集完成！"
                 return False
@@ -58,7 +58,7 @@ def collect_common_points_background():
     with mouse.Listener(on_click=on_click) as listener:
         listener.join()
     
-    if len(collecting_status["points"]) == 6:
+    if len(collecting_status["points"]) == 4:
         groups_data = collector.load_groups()
         if groups_data is None:
             groups_data = {"common_points": [], "group_points": {}}
@@ -67,7 +67,7 @@ def collect_common_points_background():
         collecting_status["message"] = "公共点已保存到文件"
     else:
         collecting_status["status"] = "error"
-        collecting_status["message"] = f"收集的点数量不足，需要6个点，实际收集了{len(collecting_status['points'])}个点"
+        collecting_status["message"] = f"收集的点数量不足，需要4个点，实际收集了{len(collecting_status['points'])}个点"
 
 def collect_group_points_background(group_id):
     global collecting_status
@@ -459,6 +459,22 @@ def click_all_common_points():
         
         send_message_all(message, group_id, speed)
         return jsonify({"success": True, "message": "群发消息完成"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/group-mode/enter', methods=['POST'])
+def enter_group_mode_api():
+    try:
+        enter_group_mode()
+        return jsonify({"success": True, "message": "进入群发模式完成"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/group-mode/exit', methods=['POST'])
+def exit_group_mode_api():
+    try:
+        exit_group_mode()
+        return jsonify({"success": True, "message": "退出群发模式完成"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 

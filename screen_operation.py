@@ -275,6 +275,86 @@ def send_message_all(message, group_id, speed='中'):
     
     print("\n群发消息完成！")
 
+def enter_group_mode():
+    collector = PointCollector()
+    
+    groups_data = collector.load_groups()
+    
+    if groups_data is None:
+        print("错误：无法读取组数据文件")
+        return
+    
+    common_points = groups_data.get("common_points", [])
+    
+    if len(common_points) < 3:
+        print("错误：公共点数据不足，需要至少3个公共点")
+        return
+    
+    print(f"\n进入群发模式...")
+    print(f"使用公共点进行操作")
+    
+    x, y = common_points[0]
+    print(f"第一步：左键点击公共点1: ({x}, {y})")
+    pyautogui.click(x, y, button='right')
+    time.sleep(0.5)
+    
+    x, y = common_points[1]
+    print(f"第二步：左键点击公共点2: ({x}, {y})")
+    pyautogui.click(x, y, button='right')
+    time.sleep(0.5)
+    
+    x, y = common_points[2]
+    print(f"第三步：右键点击公共点3: ({x}, {y})")
+    pyautogui.click(x, y, button='right')
+    time.sleep(0.5)
+    
+    x, y = common_points[2]
+    print(f"第四步：左键点击公共点3: ({x}, {y})")
+    pyautogui.click(x, y, button='left')
+    time.sleep(0.5)
+    
+    print("\n进入群发模式完成！")
+
+def exit_group_mode():
+    collector = PointCollector()
+    
+    groups_data = collector.load_groups()
+    
+    if groups_data is None:
+        print("错误：无法读取组数据文件")
+        return
+    
+    common_points = groups_data.get("common_points", [])
+    
+    if len(common_points) < 4:
+        print("错误：公共点数据不足，需要至少4个公共点")
+        return
+    
+    print(f"\n退出群发模式...")
+    print(f"使用公共点进行操作")
+    
+    x, y = common_points[0]
+    print(f"第一步：左键点击公共点1: ({x}, {y})")
+    pyautogui.click(x, y, button='left')
+    time.sleep(0.5)
+    
+    x, y = common_points[1]
+    print(f"第二步：左键点击公共点2: ({x}, {y})")
+    pyautogui.click(x, y, button='left')
+    time.sleep(0.5)
+    
+    x, y = common_points[2]
+    print(f"第三步：右键点击公共点3: ({x}, {y})")
+    pyautogui.click(x, y, button='right')
+    time.sleep(0.5)
+    
+    x, y = common_points[3]
+    print(f"第四步：左键点击公共点4: ({x}, {y})")
+    pyautogui.click(x, y, button='left')
+    time.sleep(0.5)
+    
+    print("\n退出群发模式完成！")
+
 def main():
     print("请选择操作：")
     print("1. 收集公共点（6个点）")
