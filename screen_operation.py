@@ -129,7 +129,11 @@ class PointCollector:
         
         for i, (x, y) in enumerate(points, 1):
             print(f"点击第 {i} 个位置: ({x}, {y})")
+            # 保存当前鼠标位置
+            current_x, current_y = pyautogui.position()
             pyautogui.click(x, y)
+            # 恢复鼠标位置
+            pyautogui.moveTo(current_x, current_y)
             time.sleep(1)
             
             if i == 2:
@@ -202,7 +206,11 @@ def send_message(message, group_id, speed='中'):
     
     x, y = group_specific[0]
     print(f"点击第1个位置（组{group_id} 点1）: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y)
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(sleep_time)
 
     print(f"输入文字: {message}")
@@ -213,13 +221,21 @@ def send_message(message, group_id, speed='中'):
     x, y = group_specific[1]
 
     print(f"点击第2个位置（组{group_id} 点2）: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y)
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(sleep_time)
 
     x, y = group_specific[2]
 
     print(f"点击第2个位置（组{group_id} 点2）: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y)
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(0.1)
     
     print("\n消息发送完成！")
@@ -255,7 +271,11 @@ def send_message_all(message, group_id, speed='中'):
     
     x, y = points[0]
     print(f"第一步：左键点击第1个点: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y)
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(sleep_time)
     
     print(f"第二步：复制消息并粘贴到输入框")
@@ -265,12 +285,20 @@ def send_message_all(message, group_id, speed='中'):
     
     x, y = points[1]
     print(f"第三步：点击第2个点: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y)
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(sleep_time)
     
     x, y = points[2]
     print(f"第四步：点击第3个点: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y)
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(sleep_time)
     
     print("\n群发消息完成！")
@@ -295,22 +323,38 @@ def enter_group_mode():
 
     x, y = common_points[2]
     print(f"第三步：右键点击公共点3: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y, button='right')
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(0.5)
     
     x, y = common_points[2]
     print(f"第四步：左键点击公共点3: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y, button='left')
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(0.5)
     
     x, y = common_points[0]
     print(f"第一步：左键点击公共点1: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y, button='left')
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(0.5)
     
     x, y = common_points[1]
     print(f"第二步：左键点击公共点2: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y, button='left')
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(0.5)
     
 
@@ -337,22 +381,38 @@ def exit_group_mode():
 
     x, y = common_points[2]
     print(f"第三步：右键点击公共点3: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y, button='right')
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(0.5)
     
     x, y = common_points[3]
     print(f"第四步：左键点击公共点4: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y, button='left')
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(0.5)
     
     x, y = common_points[0]
     print(f"第一步：左键点击公共点1: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y, button='left')
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(0.5)
     
     x, y = common_points[1]
     print(f"第二步：左键点击公共点2: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y, button='left')
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     time.sleep(0.5)
     
    

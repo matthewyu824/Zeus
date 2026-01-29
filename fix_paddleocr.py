@@ -155,7 +155,11 @@ def ocr_image(image_path, target_text):
 def click_at_position(x, y):
     """在指定位置执行鼠标点击"""
     print(f"正在点击位置: ({x}, {y})")
+    # 保存当前鼠标位置
+    current_x, current_y = pyautogui.position()
     pyautogui.click(x, y)
+    # 恢复鼠标位置
+    pyautogui.moveTo(current_x, current_y)
     print("点击完成")
     # 添加短暂延迟，确保操作完成
     time.sleep(1)
