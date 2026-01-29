@@ -500,6 +500,112 @@ def delete_batch_message():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
+@app.route('/api/scheduled-messages', methods=['GET', 'POST'])
+def scheduled_messages():
+    if request.method == 'GET':
+        try:
+            with open('定期发送话术.json', 'r', encoding='utf-8') as f:
+                messages = json.load(f)
+            return jsonify({"success": True, "messages": messages})
+        except Exception as e:
+            return jsonify({"success": False, "message": str(e)})
+    elif request.method == 'POST':
+        try:
+            data = request.json
+            action = data.get('action', '')
+            
+            with open('定期发送话术.json', 'r', encoding='utf-8') as f:
+                messages = json.load(f)
+            
+            if action == 'add':
+                new_message = data.get('message', '').strip()
+                if new_message:
+                    messages.append(new_message)
+                    with open('定期发送话术.json', 'w', encoding='utf-8') as f:
+                        json.dump(messages, f, ensure_ascii=False, indent=2)
+                    return jsonify({"success": True, "message": "话术添加成功"})
+                else:
+                    return jsonify({"success": False, "message": "话术内容不能为空"})
+            
+            elif action == 'delete':
+                index = data.get('index', -1)
+                if 0 <= index < len(messages):
+                    messages.pop(index)
+                    with open('定期发送话术.json', 'w', encoding='utf-8') as f:
+                        json.dump(messages, f, ensure_ascii=False, indent=2)
+                    return jsonify({"success": True, "message": "话术删除成功"})
+                else:
+                    return jsonify({"success": False, "message": "索引无效"})
+            
+            elif action == 'edit':
+                index = data.get('index', -1)
+                new_message = data.get('message', '').strip()
+                if 0 <= index < len(messages) and new_message:
+                    messages[index] = new_message
+                    with open('定期发送话术.json', 'w', encoding='utf-8') as f:
+                        json.dump(messages, f, ensure_ascii=False, indent=2)
+                    return jsonify({"success": True, "message": "话术编辑成功"})
+                else:
+                    return jsonify({"success": False, "message": "索引无效或话术内容不能为空"})
+            
+            else:
+                return jsonify({"success": False, "message": "无效的操作"})
+        except Exception as e:
+            return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/batch-messages', methods=['GET', 'POST'])
+def batch_messages():
+    if request.method == 'GET':
+        try:
+            with open('群发消息.json', 'r', encoding='utf-8') as f:
+                messages = json.load(f)
+            return jsonify({"success": True, "messages": messages})
+        except Exception as e:
+            return jsonify({"success": False, "message": str(e)})
+    elif request.method == 'POST':
+        try:
+            data = request.json
+            action = data.get('action', '')
+            
+            with open('群发消息.json', 'r', encoding='utf-8') as f:
+                messages = json.load(f)
+            
+            if action == 'add':
+                new_message = data.get('message', '').strip()
+                if new_message:
+                    messages.append(new_message)
+                    with open('群发消息.json', 'w', encoding='utf-8') as f:
+                        json.dump(messages, f, ensure_ascii=False, indent=2)
+                    return jsonify({"success": True, "message": "话术添加成功"})
+                else:
+                    return jsonify({"success": False, "message": "话术内容不能为空"})
+            
+            elif action == 'delete':
+                index = data.get('index', -1)
+                if 0 <= index < len(messages):
+                    messages.pop(index)
+                    with open('群发消息.json', 'w', encoding='utf-8') as f:
+                        json.dump(messages, f, ensure_ascii=False, indent=2)
+                    return jsonify({"success": True, "message": "话术删除成功"})
+                else:
+                    return jsonify({"success": False, "message": "索引无效"})
+            
+            elif action == 'edit':
+                index = data.get('index', -1)
+                new_message = data.get('message', '').strip()
+                if 0 <= index < len(messages) and new_message:
+                    messages[index] = new_message
+                    with open('群发消息.json', 'w', encoding='utf-8') as f:
+                        json.dump(messages, f, ensure_ascii=False, indent=2)
+                    return jsonify({"success": True, "message": "话术编辑成功"})
+                else:
+                    return jsonify({"success": False, "message": "索引无效或话术内容不能为空"})
+            
+            else:
+                return jsonify({"success": False, "message": "无效的操作"})
+        except Exception as e:
+            return jsonify({"success": False, "message": str(e)})
+
 @app.route('/api/batch/start', methods=['POST'])
 def start_batch_control():
     global batch_control_thread, batch_control_running, keyboard_listener
@@ -552,15 +658,38 @@ def click_all_common_points():
         group_id = data.get('group_id', '')
         message = data.get('message', '')
         speed = data.get('speed', '中')
+        use_file = data.get('use_file', False)
         
         if not group_id:
             return jsonify({"success": False, "message": "设备ID不能为空"})
         
-        if not message:
+        if not use_file and not message:
             return jsonify({"success": False, "message": "消息内容不能为空"})
         
-        send_message_all(message, group_id, speed)
-        return jsonify({"success": True, "message": "群发消息完成"})
+        if use_file:
+            # 从文件读取话术并群发
+            import json
+            import os
+            from random import choice
+            
+            scheduled_messages_file = os.path.join(app.root_path, '定期发送话术.json')
+            if not os.path.exists(scheduled_messages_file):
+                return jsonify({"success": False, "message": "定期发送话术.json文件不存在"})
+            
+            with open(scheduled_messages_file, 'r', encoding='utf-8') as f:
+                scheduled_data = json.load(f)
+            
+            messages = scheduled_data.get('messages', [])
+            if not messages:
+                return jsonify({"success": False, "message": "定期发送话术.json文件中没有话术"})
+            
+            # 选择一个随机话术
+            selected_message = choice(messages)
+            send_message_all(selected_message, group_id, speed)
+            return jsonify({"success": True, "message": f"群发消息完成（从文件读取）: {selected_message}"})
+        else:
+            send_message_all(message, group_id, speed)
+            return jsonify({"success": True, "message": "群发消息完成"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
@@ -591,12 +720,46 @@ def stop_batch_control():
     
     return jsonify({"success": True, "message": "群控已停止"})
 
+@app.route('/api/batch/update-probabilities', methods=['POST'])
+def update_batch_probabilities():
+    global batch_control_running, batch_control_status
+    
+    if not batch_control_running:
+        return jsonify({"success": False, "message": "群控未在运行"})
+    
+    data = request.json
+    category_probabilities = data.get('category_probabilities', {})
+    
+    if not category_probabilities:
+        return jsonify({"success": False, "message": "分类概率设置不能为空"})
+    
+    total_category_probability = sum(category_probabilities.values())
+    if total_category_probability <= 0:
+        return jsonify({"success": False, "message": "分类总概率必须大于0"})
+    
+    if total_category_probability > 1:
+        return jsonify({"success": False, "message": "分类总概率不能超过100%"})
+    
+    try:
+        # 更新全局概率分布
+        global current_category_probabilities
+        current_category_probabilities = category_probabilities
+        
+        batch_control_status["message"] = "概率分布已更新"
+        
+        return jsonify({"success": True, "message": "概率分布已更新"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
 @app.route('/api/batch/status', methods=['GET'])
 def get_batch_status():
     return jsonify(batch_control_status)
 
 def batch_control_worker(product, category_probabilities, speed):
-    global batch_control_status, batch_control_running, global_keyboard_listener
+    global batch_control_status, batch_control_running, global_keyboard_listener, current_category_probabilities
+    
+    # 初始化全局概率分布变量
+    current_category_probabilities = category_probabilities
     
     if global_keyboard_listener is None:
         global_keyboard_listener = keyboard.Listener(on_press=on_global_key_press)
@@ -613,6 +776,7 @@ def batch_control_worker(product, category_probabilities, speed):
         with open(script_file, 'r', encoding='utf-8') as f:
             scripts = json.load(f)
         
+        # 验证初始概率分布中的分类
         for category in category_probabilities.keys():
             if category not in scripts:
                 batch_control_status["status"] = "error"
@@ -638,8 +802,14 @@ def batch_control_worker(product, category_probabilities, speed):
         batch_control_status["category"] = f"{product} - {', '.join(category_probabilities.keys())}"
         batch_control_status["sent_count"] = 0
         
+        # 初始化已发送话术记录（使用索引而不是内容）
+        sent_messages = {}
+        for category in category_probabilities.keys():
+            sent_messages[category] = []
+        
         def select_category_by_probability():
-            categories = category_probabilities
+            # 使用全局概率分布变量，支持动态更新
+            categories = current_category_probabilities
             if not categories:
                 return None
             r = random.random()
@@ -649,6 +819,36 @@ def batch_control_worker(product, category_probabilities, speed):
                 if r <= cumulative:
                     return category
             return list(categories.keys())[0]
+        
+        def select_message_by_category(category):
+            # 验证分类是否存在
+            if category not in scripts:
+                return None
+            
+            # 初始化新分类的已发送记录
+            if category not in sent_messages:
+                sent_messages[category] = []
+            
+            messages = scripts.get(category, [])
+            if not messages:
+                return None
+            
+            # 获取未发送的索引
+            total_messages = len(messages)
+            unsent_indices = [i for i in range(total_messages) if i not in sent_messages[category]]
+            
+            # 如果所有索引都已发送，清空已发送记录
+            if not unsent_indices:
+                sent_messages[category].clear()
+                unsent_indices = list(range(total_messages))
+            
+            # 随机选择一个未发送的索引
+            selected_index = random.choice(unsent_indices)
+            selected_message = messages[selected_index]
+            # 记录到已发送列表
+            sent_messages[category].append(selected_index)
+            
+            return selected_message
         
         while batch_control_running:
             for group_id in group_ids:
@@ -660,12 +860,11 @@ def batch_control_worker(product, category_probabilities, speed):
                 if not selected_category:
                     continue
                 
-                messages = scripts.get(selected_category, [])
+                message = select_message_by_category(selected_category)
                 
-                if not messages:
+                if not message:
                     continue
                 
-                message = random.choice(messages)
                 batch_control_status["current_group"] = group_id
                 batch_control_status["message"] = f"正在向设备 {group_id} 发送消息（{product} - {selected_category}）：{message}"
                 
@@ -697,15 +896,16 @@ def start_scheduled_send():
     message = data.get('message', '')
     group_id = data.get('group_id', '')
     interval = data.get('interval', 60)
-    
-    if not message:
-        return jsonify({"success": False, "message": "消息内容不能为空"})
+    use_file = data.get('use_file', False)
     
     if not group_id:
         return jsonify({"success": False, "message": "设备ID不能为空"})
     
     if interval < 1:
         return jsonify({"success": False, "message": "时间间隔必须至少为1秒"})
+    
+    if not use_file and not message:
+        return jsonify({"success": False, "message": "消息内容不能为空"})
     
     try:
         groups_data = collector.load_groups()
@@ -716,14 +916,17 @@ def start_scheduled_send():
             return jsonify({"success": False, "message": f"设备 {group_id} 不存在"})
         
         scheduled_send_running = True
-        scheduled_send_thread = threading.Thread(target=scheduled_send_worker, args=(message, group_id, interval))
+        scheduled_send_thread = threading.Thread(target=scheduled_send_worker, args=(message, group_id, interval, use_file))
         scheduled_send_thread.start()
         
         if global_keyboard_listener is None:
             global_keyboard_listener = keyboard.Listener(on_press=on_global_key_press)
             global_keyboard_listener.start()
         
-        return jsonify({"success": True, "message": f"开始定期发送，按ESC键可快速停止"})
+        if use_file:
+            return jsonify({"success": True, "message": f"开始从文件读取话术定期发送，按ESC键可快速停止"})
+        else:
+            return jsonify({"success": True, "message": f"开始定期发送，按ESC键可快速停止"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
@@ -742,14 +945,33 @@ def stop_scheduled_send():
 def get_scheduled_send_status():
     return jsonify(scheduled_send_status)
 
-def scheduled_send_worker(message, group_id, interval):
+def scheduled_send_worker(message, group_id, interval, use_file):
     global scheduled_send_status, scheduled_send_running
+    
+    # 初始化已发送话术记录
+    sent_messages = []
+    scheduled_messages = []
+    
+    # 如果使用文件，加载话术列表
+    if use_file:
+        try:
+            with open('定期发送话术.json', 'r', encoding='utf-8') as f:
+                scheduled_messages = json.load(f)
+        except Exception as e:
+            scheduled_send_status["status"] = "error"
+            scheduled_send_status["message"] = f"无法读取定期发送话术文件：{str(e)}"
+            scheduled_send_running = False
+            return
     
     try:
         scheduled_send_status["status"] = "running"
         scheduled_send_status["group_id"] = group_id
         scheduled_send_status["sent_count"] = 0
-        scheduled_send_status["message"] = f"开始定期发送消息到设备 {group_id}，间隔 {interval} 秒"
+        
+        if use_file:
+            scheduled_send_status["message"] = f"开始从文件读取话术定期发送到设备 {group_id}，间隔 {interval} 秒"
+        else:
+            scheduled_send_status["message"] = f"开始定期发送消息到设备 {group_id}，间隔 {interval} 秒"
         
         groups_data = collector.load_groups()
         if groups_data is None:
@@ -766,7 +988,33 @@ def scheduled_send_worker(message, group_id, interval):
             return
         
         if group_id == 'random':
-            scheduled_send_status["message"] = f"开始随机定期发送消息，间隔 {interval} 秒"
+            if use_file:
+                scheduled_send_status["message"] = f"开始随机从文件读取话术定期发送，间隔 {interval} 秒"
+            else:
+                scheduled_send_status["message"] = f"开始随机定期发送消息，间隔 {interval} 秒"
+        
+        def get_next_message():
+            if not use_file:
+                return message
+            
+            # 从文件中选择未发送的话术
+            if not scheduled_messages:
+                return None
+            
+            # 获取未发送的话术
+            unsent_messages = [msg for msg in scheduled_messages if msg not in sent_messages]
+            
+            # 如果所有话术都已发送，清空已发送记录
+            if not unsent_messages:
+                sent_messages.clear()
+                unsent_messages = scheduled_messages[:]
+            
+            # 随机选择一条未发送的话术
+            selected_message = random.choice(unsent_messages)
+            # 记录到已发送列表
+            sent_messages.append(selected_message)
+            
+            return selected_message
         
         while scheduled_send_running:
             next_send_time = time.time() + interval
@@ -778,15 +1026,27 @@ def scheduled_send_worker(message, group_id, interval):
             if not scheduled_send_running:
                 break
             
+            # 获取要发送的消息
+            current_message = get_next_message()
+            if not current_message:
+                scheduled_send_status["message"] = "没有可用的话术"
+                continue
+            
             target_group_id = group_id
             if group_id == 'random':
                 target_group_id = random.choice(group_ids)
-                scheduled_send_status["message"] = f"正在向随机设备 {target_group_id} 发送消息：{message}"
+                if use_file:
+                    scheduled_send_status["message"] = f"正在向随机设备 {target_group_id} 发送话术：{current_message}"
+                else:
+                    scheduled_send_status["message"] = f"正在向随机设备 {target_group_id} 发送消息：{current_message}"
             else:
-                scheduled_send_status["message"] = f"正在向设备 {group_id} 发送消息：{message}"
+                if use_file:
+                    scheduled_send_status["message"] = f"正在向设备 {group_id} 发送话术：{current_message}"
+                else:
+                    scheduled_send_status["message"] = f"正在向设备 {group_id} 发送消息：{current_message}"
             
             try:
-                send_message(message, target_group_id)
+                send_message(current_message, target_group_id)
                 scheduled_send_status["sent_count"] += 1
                 if group_id == 'random':
                     scheduled_send_status["message"] = f"消息已发送到随机设备 {target_group_id}，共发送 {scheduled_send_status['sent_count']} 次"

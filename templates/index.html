@@ -706,10 +706,53 @@
                 <span class="icon">📱</span>
                 <span>设备管理</span>
             </div>
+            <div class="nav-item" data-section="scripts">
+                <span class="icon">📝</span>
+                <span>话术管理</span>
+            </div>
         </div>
     </div>
 
     <div class="main-content">
+        <div id="scripts" class="content-section">
+            <div class="section-header">
+                <h2>📝 话术管理</h2>
+                <p>管理定期发送和群发消息的话术</p>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">📄</span>
+                    <span>定期发送话术</span>
+                </div>
+                <div class="card-content">
+                    <div id="scheduledScriptsList">
+                        <!-- 话术列表将通过JavaScript动态生成 -->
+                        <div class="status-text">加载中...</div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <input type="text" id="newScheduledScript" class="input-field" placeholder="输入新的话术">
+                        <button id="addScheduledScriptBtn" class="btn btn-primary" onclick="addScheduledScript()">添加话术</button>
+                    </div>
+                </div>
+            </div>
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-title">
+                    <span class="icon">📢</span>
+                    <span>群发消息话术</span>
+                </div>
+                <div class="card-content">
+                    <div id="batchScriptsList">
+                        <!-- 话术列表将通过JavaScript动态生成 -->
+                        <div class="status-text">加载中...</div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <input type="text" id="newBatchScript" class="input-field" placeholder="输入新的话术">
+                        <button id="addBatchScriptBtn" class="btn btn-primary" onclick="addBatchScript()">添加话术</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="collect" class="content-section active">
             <div class="section-header">
                 <h2>📍 坐标收集</h2>
@@ -791,6 +834,13 @@
                         <select id="batchMessageSelect" class="input-field" style="margin-bottom: 12px;">
                             <option value="">选择群发消息</option>
                         </select>
+                        <div class="checkbox-group" style="margin-bottom: 12px;">
+                            <input type="checkbox" id="useBatchFile" onchange="toggleBatchFileMode()">
+                            <label for="useBatchFile">从文件读取话术</label>
+                        </div>
+                        <select id="batchFileMessageSelect" class="input-field" style="margin-bottom: 12px; display: none;">
+                            <option value="">选择文件中的话术</option>
+                        </select>
                         <button id="clickAllBtn" class="btn btn-success" onclick="clickAllCommonPoints()" style="width: 100%;">
                             群发消息
                         </button>
@@ -848,6 +898,9 @@
                                 <button id="startBatchBtn" class="btn btn-success" onclick="startBatchControl()" style="flex: 1; padding: 10px; font-size: 13px;">
                                     开始群控
                                 </button>
+                                <button id="updateProbabilitiesBtn" class="btn btn-primary" onclick="updateBatchProbabilities()" disabled style="flex: 1; padding: 10px; font-size: 13px;">
+                                    更新概率
+                                </button>
                                 <button id="stopBatchBtn" class="btn btn-danger" onclick="stopBatchControl()" disabled style="flex: 1; padding: 10px; font-size: 13px;">
                                     停止群控
                                 </button>
@@ -878,7 +931,14 @@
                     </div>
                     <div class="dashboard-section-content">
                         <div style="margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                <input type="checkbox" id="useScheduledFile" onchange="toggleScheduledFileMode()" style="width: auto;">
+                                <label for="useScheduledFile" style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0;">从文件读取话术</label>
+                            </div>
                             <input type="text" id="scheduledMessageInput" class="input-field" placeholder="输入要定期发送的消息" style="margin-bottom: 10px;">
+                            <select id="scheduledFileMessageSelect" class="input-field" placeholder="选择文件中的话术" style="margin-bottom: 10px; display: none;">
+                                <option value="">选择文件中的话术</option>
+                            </select>
                             <div style="display: flex; gap: 10px;">
                                 <select id="scheduledGroupSelect" class="input-field" style="flex: 1;">
                                     <option value="random">随机设备</option>
@@ -1239,12 +1299,13 @@
             const batchMessageInput = document.getElementById('batchMessageInput');
             const clickAllBtn = document.getElementById('clickAllBtn');
             const clickAllStatus = document.getElementById('clickAllStatus');
+            const useBatchFile = document.getElementById('useBatchFile').checked;
             
             const groupId = batchDeviceSelect.value.trim();
             const selectedMessage = batchMessageSelect.value.trim();
             const inputMessage = batchMessageInput.value.trim();
             
-            const message = inputMessage || selectedMessage;
+            let message = inputMessage || selectedMessage;
             
             if (!groupId) {
                 clickAllStatus.textContent = '请选择设备';
@@ -1252,7 +1313,7 @@
                 return;
             }
             
-            if (!message) {
+            if (!useBatchFile && !message) {
                 clickAllStatus.textContent = '请输入或选择要群发的消息';
                 clickAllStatus.className = 'status-text error';
                 return;
@@ -1267,7 +1328,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ group_id: groupId, message: message, speed: '中' })
+                    body: JSON.stringify({ group_id: groupId, message: message, speed: '中', use_file: useBatchFile })
                 });
                 const data = await response.json();
                 
@@ -1971,6 +2032,7 @@
         async function startBatchControl() {
             const startBatchBtn = document.getElementById('startBatchBtn');
             const stopBatchBtn = document.getElementById('stopBatchBtn');
+            const updateProbabilitiesBtn = document.getElementById('updateProbabilitiesBtn');
             const batchStatus = document.getElementById('batchStatus');
             
             if (!selectedBatchProduct) {
@@ -1996,6 +2058,7 @@
             
             startBatchBtn.disabled = true;
             stopBatchBtn.disabled = false;
+            updateProbabilitiesBtn.disabled = false;
             batchStatus.innerHTML = '<span class="loading"></span>正在启动群控...';
             
             try {
@@ -2033,6 +2096,7 @@
         async function stopBatchControl() {
             const startBatchBtn = document.getElementById('startBatchBtn');
             const stopBatchBtn = document.getElementById('stopBatchBtn');
+            const updateProbabilitiesBtn = document.getElementById('updateProbabilitiesBtn');
             const batchStatus = document.getElementById('batchStatus');
             
             try {
@@ -2046,6 +2110,7 @@
                     batchStatus.className = 'status-text success';
                     startBatchBtn.disabled = false;
                     stopBatchBtn.disabled = true;
+                    updateProbabilitiesBtn.disabled = true;
                     
                     if (batchStatusInterval) {
                         clearInterval(batchStatusInterval);
@@ -2057,6 +2122,57 @@
                 }
             } catch (error) {
                 batchStatus.textContent = '停止失败：' + error.message;
+                batchStatus.className = 'status-text error';
+            }
+        }
+
+        async function updateBatchProbabilities() {
+            const batchStatus = document.getElementById('batchStatus');
+            
+            if (!selectedBatchProduct) {
+                batchStatus.textContent = '请先选择产品';
+                batchStatus.className = 'status-text error';
+                return;
+            }
+            
+            const categoryProbabilities = {};
+            document.querySelectorAll('#categoryProbabilitySettings .probability-input').forEach(input => {
+                const category = input.getAttribute('data-category');
+                const probability = parseInt(input.value) || 0;
+                if (probability > 0) {
+                    categoryProbabilities[category] = probability / 100;
+                }
+            });
+            
+            if (Object.keys(categoryProbabilities).length === 0) {
+                batchStatus.textContent = '请至少设置一个分类的概率';
+                batchStatus.className = 'status-text error';
+                return;
+            }
+            
+            batchStatus.innerHTML = '<span class="loading"></span>正在更新概率分布...';
+            
+            try {
+                const response = await fetch('/api/batch/update-probabilities', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        category_probabilities: categoryProbabilities
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    batchStatus.textContent = data.message;
+                    batchStatus.className = 'status-text success';
+                } else {
+                    batchStatus.textContent = data.message;
+                    batchStatus.className = 'status-text error';
+                }
+            } catch (error) {
+                batchStatus.textContent = '更新失败：' + error.message;
                 batchStatus.className = 'status-text error';
             }
         }
@@ -2102,6 +2218,326 @@
             }, 500);
         }
 
+        async function loadScheduledScripts() {
+            try {
+                const response = await fetch('/api/scheduled-messages');
+                const data = await response.json();
+                
+                const scriptsList = document.getElementById('scheduledScriptsList');
+                if (data.success && data.messages) {
+                    scriptsList.innerHTML = '';
+                    data.messages.forEach((message, index) => {
+                        scriptsList.innerHTML += `
+                            <div class="script-item" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <span>${index + 1}. ${message}</span>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn btn-sm btn-primary" onclick="editScheduledScript(${index})">编辑</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteScheduledScript(${index})">删除</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    scriptsList.innerHTML = '<div class="status-text error">无法加载话术列表</div>';
+                }
+            } catch (error) {
+                console.error('加载话术列表失败:', error);
+                document.getElementById('scheduledScriptsList').innerHTML = '<div class="status-text error">加载失败</div>';
+            }
+        }
+
+        async function loadBatchScripts() {
+            try {
+                const response = await fetch('/api/batch-messages');
+                const data = await response.json();
+                
+                const scriptsList = document.getElementById('batchScriptsList');
+                if (data.success && data.messages) {
+                    scriptsList.innerHTML = '';
+                    data.messages.forEach((message, index) => {
+                        scriptsList.innerHTML += `
+                            <div class="script-item" style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <span>${index + 1}. ${message}</span>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn btn-sm btn-primary" onclick="editBatchScript(${index})">编辑</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteBatchScript(${index})">删除</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    scriptsList.innerHTML = '<div class="status-text error">无法加载话术列表</div>';
+                }
+            } catch (error) {
+                console.error('加载话术列表失败:', error);
+                document.getElementById('batchScriptsList').innerHTML = '<div class="status-text error">加载失败</div>';
+            }
+        }
+
+        async function addBatchScript() {
+            const newScriptInput = document.getElementById('newBatchScript');
+            const newScript = newScriptInput.value.trim();
+            
+            if (!newScript) {
+                alert('请输入话术内容');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/batch-messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action: 'add', message: newScript })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    newScriptInput.value = '';
+                    loadBatchScripts();
+                } else {
+                    alert('添加失败: ' + data.message);
+                }
+            } catch (error) {
+                console.error('添加话术失败:', error);
+                alert('添加失败');
+            }
+        }
+
+        async function deleteBatchScript(index) {
+            if (!confirm('确定要删除这条话术吗？')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/batch-messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action: 'delete', index: index })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadBatchScripts();
+                } else {
+                    alert('删除失败: ' + data.message);
+                }
+            } catch (error) {
+                console.error('删除话术失败:', error);
+                alert('删除失败');
+            }
+        }
+
+        async function editBatchScript(index) {
+            try {
+                const response = await fetch('/api/batch-messages');
+                const data = await response.json();
+                
+                if (data.success && data.messages) {
+                    const currentMessage = data.messages[index];
+                    const newMessage = prompt('编辑话术:', currentMessage);
+                    
+                    if (newMessage !== null && newMessage.trim() !== '') {
+                        const editResponse = await fetch('/api/batch-messages', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ action: 'edit', index: index, message: newMessage.trim() })
+                        });
+                        const editData = await editResponse.json();
+                        
+                        if (editData.success) {
+                            loadBatchScripts();
+                        } else {
+                            alert('编辑失败: ' + editData.message);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('编辑话术失败:', error);
+                alert('编辑失败');
+            }
+        }
+
+        // 页面加载完成后加载话术列表
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始加载话术列表
+            loadScheduledScripts();
+            loadBatchScripts();
+            
+            // 监听导航切换，当切换到话术管理页面时重新加载
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.getAttribute('data-section');
+                    if (section === 'scripts') {
+                        loadScheduledScripts();
+                        loadBatchScripts();
+                    }
+                });
+            });
+        });
+
+        async function addScheduledScript() {
+            const newScriptInput = document.getElementById('newScheduledScript');
+            const newScript = newScriptInput.value.trim();
+            
+            if (!newScript) {
+                alert('请输入话术内容');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/scheduled-messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action: 'add', message: newScript })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    newScriptInput.value = '';
+                    loadScheduledScripts();
+                } else {
+                    alert('添加失败: ' + data.message);
+                }
+            } catch (error) {
+                console.error('添加话术失败:', error);
+                alert('添加失败');
+            }
+        }
+
+        async function deleteScheduledScript(index) {
+            if (!confirm('确定要删除这条话术吗？')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/scheduled-messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action: 'delete', index: index })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    loadScheduledScripts();
+                } else {
+                    alert('删除失败: ' + data.message);
+                }
+            } catch (error) {
+                console.error('删除话术失败:', error);
+                alert('删除失败');
+            }
+        }
+
+        async function editScheduledScript(index) {
+            try {
+                const response = await fetch('/api/scheduled-messages');
+                const data = await response.json();
+                
+                if (data.success && data.messages) {
+                    const currentMessage = data.messages[index];
+                    const newMessage = prompt('编辑话术:', currentMessage);
+                    
+                    if (newMessage !== null && newMessage.trim() !== '') {
+                        const editResponse = await fetch('/api/scheduled-messages', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ action: 'edit', index: index, message: newMessage.trim() })
+                        });
+                        const editData = await editResponse.json();
+                        
+                        if (editData.success) {
+                            loadScheduledScripts();
+                        } else {
+                            alert('编辑失败: ' + editData.message);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('编辑话术失败:', error);
+                alert('编辑失败');
+            }
+        }
+
+        function toggleBatchFileMode() {
+            const useBatchFile = document.getElementById('useBatchFile').checked;
+            const batchMessageInput = document.getElementById('batchMessageInput');
+            const batchMessageSelect = document.getElementById('batchMessageSelect');
+            const batchFileMessageSelect = document.getElementById('batchFileMessageSelect');
+            
+            if (useBatchFile) {
+                batchMessageInput.style.display = 'none';
+                batchMessageSelect.style.display = 'none';
+                batchFileMessageSelect.style.display = 'block';
+                loadBatchMessages();
+            } else {
+                batchMessageInput.style.display = 'block';
+                batchMessageSelect.style.display = 'block';
+                batchFileMessageSelect.style.display = 'none';
+            }
+        }
+
+        async function loadBatchMessages() {
+            try {
+                const response = await fetch('/api/scheduled-messages');
+                const data = await response.json();
+                
+                const batchFileMessageSelect = document.getElementById('batchFileMessageSelect');
+                if (data.success && data.messages) {
+                    batchFileMessageSelect.innerHTML = '<option value="">选择文件中的话术</option>';
+                    data.messages.forEach(message => {
+                        batchFileMessageSelect.innerHTML += `<option value="${message}">${message}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('加载群发话术失败:', error);
+            }
+        }
+
+        function toggleScheduledFileMode() {
+            const useScheduledFile = document.getElementById('useScheduledFile').checked;
+            const scheduledMessageInput = document.getElementById('scheduledMessageInput');
+            const scheduledFileMessageSelect = document.getElementById('scheduledFileMessageSelect');
+            
+            if (useScheduledFile) {
+                scheduledMessageInput.style.display = 'none';
+                scheduledFileMessageSelect.style.display = 'block';
+                loadScheduledMessages();
+            } else {
+                scheduledMessageInput.style.display = 'block';
+                scheduledFileMessageSelect.style.display = 'none';
+            }
+        }
+
+        async function loadScheduledMessages() {
+            try {
+                const response = await fetch('/api/scheduled-messages');
+                const data = await response.json();
+                
+                const scheduledFileMessageSelect = document.getElementById('scheduledFileMessageSelect');
+                if (data.success && data.messages) {
+                    scheduledFileMessageSelect.innerHTML = '<option value="">选择文件中的话术</option>';
+                    data.messages.forEach(message => {
+                        scheduledFileMessageSelect.innerHTML += `<option value="${message}">${message}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('加载定期发送话术失败:', error);
+            }
+        }
+
         async function startScheduledSend() {
             const scheduledMessageInput = document.getElementById('scheduledMessageInput');
             const scheduledGroupSelect = document.getElementById('scheduledGroupSelect');
@@ -2109,16 +2545,20 @@
             const startScheduledBtn = document.getElementById('startScheduledBtn');
             const stopScheduledBtn = document.getElementById('stopScheduledBtn');
             const scheduledStatus = document.getElementById('scheduledStatus');
+            const useScheduledFile = document.getElementById('useScheduledFile').checked;
             
-            const message = scheduledMessageInput.value.trim();
+            let message = '';
+            if (!useScheduledFile) {
+                message = scheduledMessageInput.value.trim();
+                if (!message) {
+                    scheduledStatus.textContent = '请输入消息内容';
+                    scheduledStatus.className = 'status-text error';
+                    return;
+                }
+            }
+            
             const groupId = scheduledGroupSelect.value;
             const interval = parseInt(intervalInput.value);
-            
-            if (!message) {
-                scheduledStatus.textContent = '请输入消息内容';
-                scheduledStatus.className = 'status-text error';
-                return;
-            }
             
             if (!groupId) {
                 scheduledStatus.textContent = '请选择设备';
@@ -2145,7 +2585,8 @@
                     body: JSON.stringify({ 
                         message: message, 
                         group_id: groupId, 
-                        interval: interval 
+                        interval: interval,
+                        use_file: useScheduledFile
                     })
                 });
                 const data = await response.json();
