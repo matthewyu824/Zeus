@@ -917,7 +917,12 @@
                     <span>话术管理</span>
                 </div>
                 <div style="margin-bottom: 15px;">
-                    <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 8px; display: block;">选择产品</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="color: rgba(255,255,255,0.7); font-size: 13px; display: block;">选择产品</label>
+                        <button class="btn btn-primary" onclick="showCreateProductModal()" style="padding: 6px 12px; font-size: 12px;">
+                            + 新建产品
+                        </button>
+                    </div>
                     <div id="productButtons" style="display: flex; flex-wrap: wrap; gap: 8px;">
                         <div class="empty-state" style="flex: 1; padding: 10px; font-size: 12px;">
                             <div class="icon">⏳</div>
@@ -926,6 +931,12 @@
                     </div>
                 </div>
                 <div id="addScriptCard" style="display: none; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="color: rgba(255,255,255,0.7); font-size: 13px; display: block;">选择类目</label>
+                        <button class="btn btn-primary" onclick="showCreateCategoryModal()" style="padding: 6px 12px; font-size: 12px;">
+                            + 新建类目
+                        </button>
+                    </div>
                     <div style="display: flex; gap: 10px; align-items: center;">
                         <select id="scriptCategorySelect" class="input-field" style="flex: 1;" onchange="loadScriptsByCategory()">
                             <option value="">选择类目</option>
@@ -943,6 +954,38 @@
                             <div>请先选择类目</div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 新建产品模态框 -->
+        <div id="createProductModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+            <div style="background-color: #1a1a2e; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 400px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+                <h3 style="color: #fff; margin-bottom: 15px; font-size: 16px;">新建产品</h3>
+                <input type="text" id="createProductInput" class="input-field" placeholder="输入产品名称" style="width: 100%; margin-bottom: 15px;">
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="btn btn-primary" onclick="createProduct()" style="padding: 8px 16px; font-size: 13px;">
+                        创建
+                    </button>
+                    <button class="btn btn-danger" onclick="hideCreateProductModal()" style="padding: 8px 16px; font-size: 13px;">
+                        取消
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 新建类目模态框 -->
+        <div id="createCategoryModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
+            <div style="background-color: #1a1a2e; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 400px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
+                <h3 style="color: #fff; margin-bottom: 15px; font-size: 16px;">新建类目</h3>
+                <input type="text" id="createCategoryInput" class="input-field" placeholder="输入类目名称" style="width: 100%; margin-bottom: 15px;">
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="btn btn-primary" onclick="createCategory()" style="padding: 8px 16px; font-size: 13px;">
+                        创建
+                    </button>
+                    <button class="btn btn-danger" onclick="hideCreateCategoryModal()" style="padding: 8px 16px; font-size: 13px;">
+                        取消
+                    </button>
                 </div>
             </div>
         </div>
@@ -1531,7 +1574,14 @@
             
             let html = '';
             products.forEach(product => {
-                html += `<button class="product-button" onclick="selectProduct('${product}', '${containerId}')">${product}</button>`;
+                if (containerId === 'productButtons') {
+                    html += `<div style="display: flex; align-items: center; gap: 4px;">
+                        <button class="product-button" onclick="selectProduct('${product}', '${containerId}')">${product}</button>
+                        <button class="delete-script-btn" onclick="deleteProduct('${product}')" style="padding: 4px 8px; font-size: 11px;">删除</button>
+                    </div>`;
+                } else {
+                    html += `<button class="product-button" onclick="selectProduct('${product}', '${containerId}')">${product}</button>`;
+                }
             });
             
             container.innerHTML = html;
@@ -1749,16 +1799,29 @@
                 const response = await fetch(`/api/scripts/${encodeURIComponent(selectedProduct)}/${encodeURIComponent(category)}`);
                 const data = await response.json();
                 
-                if (data.success && data.scripts && data.scripts.length > 0) {
-                    let html = '';
-                    data.scripts.forEach(script => {
+                if (data.success && data.scripts) {
+                    let html = `
+                        <div class="script-item">
+                            <span class="script-text" style="font-weight: 500; color: #667eea;">类目操作</span>
+                            <button class="delete-script-btn" onclick="deleteCategory('${selectedProduct}', '${category}')">删除类目</button>
+                        </div>
+                    `;
+                    if (data.scripts.length > 0) {
+                        data.scripts.forEach(script => {
+                            html += `
+                                <div class="script-item">
+                                    <span class="script-text">${script}</span>
+                                    <button class="delete-script-btn" onclick="deleteScript('${selectedProduct}', '${category}', '${script.replace(/'/g, "\\'")}')">删除</button>
+                                </div>
+                            `;
+                        });
+                    } else {
                         html += `
                             <div class="script-item">
-                                <span class="script-text">${script}</span>
-                                <button class="delete-script-btn" onclick="deleteScript('${selectedProduct}', '${category}', '${script.replace(/'/g, "\\'")}')">删除</button>
+                                <span class="script-text">该类目下暂无话术</span>
                             </div>
                         `;
-                    });
+                    }
                     scriptsDisplay.innerHTML = html;
                 } else {
                     scriptsDisplay.innerHTML = `
@@ -2128,6 +2191,152 @@
                 }
             }
         });
+
+        // 产品和类目管理功能
+        function showCreateProductModal() {
+            document.getElementById('createProductModal').style.display = 'block';
+        }
+
+        function hideCreateProductModal() {
+            document.getElementById('createProductModal').style.display = 'none';
+        }
+
+        async function createProduct() {
+            const productInput = document.getElementById('createProductInput');
+            const product = productInput.value.trim();
+            
+            if (!product) {
+                alert('请输入产品名称');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/scripts/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ product })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    hideCreateProductModal();
+                    productInput.value = '';
+                    loadProducts();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('创建失败：' + error.message);
+            }
+        }
+
+        async function deleteProduct(product) {
+            if (!confirm(`确定要删除产品 ${product} 吗？`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/scripts/products/${encodeURIComponent(product)}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    loadProducts();
+                    if (selectedProduct === product) {
+                        selectedProduct = '';
+                        document.getElementById('addScriptCard').style.display = 'none';
+                        document.getElementById('scriptsListCard').style.display = 'none';
+                    }
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('删除失败：' + error.message);
+            }
+        }
+
+        function showCreateCategoryModal() {
+            if (!selectedProduct) {
+                alert('请先选择产品');
+                return;
+            }
+            document.getElementById('createCategoryModal').style.display = 'block';
+        }
+
+        function hideCreateCategoryModal() {
+            document.getElementById('createCategoryModal').style.display = 'none';
+        }
+
+        async function createCategory() {
+            const categoryInput = document.getElementById('createCategoryInput');
+            const category = categoryInput.value.trim();
+            const product = selectedProduct;
+            
+            if (!product) {
+                alert('请先选择产品');
+                return;
+            }
+            
+            if (!category) {
+                alert('请输入类目名称');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/scripts/${encodeURIComponent(product)}/categories`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ category })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    hideCreateCategoryModal();
+                    categoryInput.value = '';
+                    loadCategoriesByProduct(product);
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('创建失败：' + error.message);
+            }
+        }
+
+        async function deleteCategory(product, category) {
+            if (!confirm(`确定要删除类目 ${category} 吗？`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/scripts/${encodeURIComponent(product)}/categories/${encodeURIComponent(category)}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    loadCategoriesByProduct(product);
+                    document.getElementById('scriptsDisplay').innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">📝</div>
+                            <div>请先选择产品和类目</div>
+                        </div>
+                    `;
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('删除失败：' + error.message);
+            }
+        }
 
         loadGroups();
         loadCategories();

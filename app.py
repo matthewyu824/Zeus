@@ -190,12 +190,23 @@ def delete_group(group_id):
     
     return jsonify({"success": True, "message": f"设备 {group_id} 已删除"})
 
+import os
+
 @app.route('/api/scripts/categories', methods=['GET'])
 def get_script_categories():
     try:
-        with open('话术.json', 'r', encoding='utf-8') as f:
-            scripts = json.load(f)
-        products = list(scripts.keys())
+        script_dir = '话术文件'
+        if not os.path.exists(script_dir):
+            return jsonify({"success": False, "message": "话术文件目录不存在"})
+        
+        products = []
+        # 获取所有JSON文件并按名称排序
+        json_files = sorted([f for f in os.listdir(script_dir) if f.endswith('.json')])
+        
+        for filename in json_files:
+            product = filename[:-5]
+            products.append(product)
+        
         return jsonify({"success": True, "products": products})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
@@ -203,13 +214,14 @@ def get_script_categories():
 @app.route('/api/scripts/<product>/categories', methods=['GET'])
 def get_categories_by_product(product):
     try:
-        with open('话术.json', 'r', encoding='utf-8') as f:
-            scripts = json.load(f)
-        
-        if product not in scripts:
+        script_file = os.path.join('话术文件', f'{product}.json')
+        if not os.path.exists(script_file):
             return jsonify({"success": False, "message": f"产品 {product} 不存在"})
         
-        categories = list(scripts[product].keys())
+        with open(script_file, 'r', encoding='utf-8') as f:
+            scripts = json.load(f)
+        
+        categories = list(scripts.keys())
         return jsonify({"success": True, "categories": categories})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
@@ -217,16 +229,17 @@ def get_categories_by_product(product):
 @app.route('/api/scripts/<product>/<category>', methods=['GET'])
 def get_scripts_by_product_category(product, category):
     try:
-        with open('话术.json', 'r', encoding='utf-8') as f:
-            scripts = json.load(f)
-        
-        if product not in scripts:
+        script_file = os.path.join('话术文件', f'{product}.json')
+        if not os.path.exists(script_file):
             return jsonify({"success": False, "message": f"产品 {product} 不存在"})
         
-        if category not in scripts[product]:
+        with open(script_file, 'r', encoding='utf-8') as f:
+            scripts = json.load(f)
+        
+        if category not in scripts:
             return jsonify({"success": False, "message": f"类目 {category} 不存在"})
         
-        return jsonify({"success": True, "scripts": scripts[product][category]})
+        return jsonify({"success": True, "scripts": scripts[category]})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
@@ -239,18 +252,19 @@ def add_script(product, category):
         if not script:
             return jsonify({"success": False, "message": "话术内容不能为空"})
         
-        with open('话术.json', 'r', encoding='utf-8') as f:
-            scripts = json.load(f)
+        script_file = os.path.join('话术文件', f'{product}.json')
+        if not os.path.exists(script_file):
+            scripts = {}
+        else:
+            with open(script_file, 'r', encoding='utf-8') as f:
+                scripts = json.load(f)
         
-        if product not in scripts:
-            scripts[product] = {}
+        if category not in scripts:
+            scripts[category] = []
         
-        if category not in scripts[product]:
-            scripts[product][category] = []
+        scripts[category].append(script)
         
-        scripts[product][category].append(script)
-        
-        with open('话术.json', 'w', encoding='utf-8') as f:
+        with open(script_file, 'w', encoding='utf-8') as f:
             json.dump(scripts, f, ensure_ascii=False, indent=2)
         
         return jsonify({"success": True, "message": "话术添加成功"})
@@ -267,22 +281,23 @@ def update_script(product, category):
         if not old_script or not new_script:
             return jsonify({"success": False, "message": "话术内容不能为空"})
         
-        with open('话术.json', 'r', encoding='utf-8') as f:
-            scripts = json.load(f)
-        
-        if product not in scripts:
+        script_file = os.path.join('话术文件', f'{product}.json')
+        if not os.path.exists(script_file):
             return jsonify({"success": False, "message": f"产品 {product} 不存在"})
         
-        if category not in scripts[product]:
+        with open(script_file, 'r', encoding='utf-8') as f:
+            scripts = json.load(f)
+        
+        if category not in scripts:
             return jsonify({"success": False, "message": f"类目 {category} 不存在"})
         
-        if old_script not in scripts[product][category]:
+        if old_script not in scripts[category]:
             return jsonify({"success": False, "message": "原话术不存在"})
         
-        index = scripts[product][category].index(old_script)
-        scripts[product][category][index] = new_script
+        index = scripts[category].index(old_script)
+        scripts[category][index] = new_script
         
-        with open('话术.json', 'w', encoding='utf-8') as f:
+        with open(script_file, 'w', encoding='utf-8') as f:
             json.dump(scripts, f, ensure_ascii=False, indent=2)
         
         return jsonify({"success": True, "message": "话术修改成功"})
@@ -298,24 +313,110 @@ def delete_script(product, category):
         if not script:
             return jsonify({"success": False, "message": "话术内容不能为空"})
         
-        with open('话术.json', 'r', encoding='utf-8') as f:
-            scripts = json.load(f)
-        
-        if product not in scripts:
+        script_file = os.path.join('话术文件', f'{product}.json')
+        if not os.path.exists(script_file):
             return jsonify({"success": False, "message": f"产品 {product} 不存在"})
         
-        if category not in scripts[product]:
+        with open(script_file, 'r', encoding='utf-8') as f:
+            scripts = json.load(f)
+        
+        if category not in scripts:
             return jsonify({"success": False, "message": f"类目 {category} 不存在"})
         
-        if script not in scripts[product][category]:
+        if script not in scripts[category]:
             return jsonify({"success": False, "message": "话术不存在"})
         
-        scripts[product][category].remove(script)
+        scripts[category].remove(script)
         
-        with open('话术.json', 'w', encoding='utf-8') as f:
+        with open(script_file, 'w', encoding='utf-8') as f:
             json.dump(scripts, f, ensure_ascii=False, indent=2)
         
         return jsonify({"success": True, "message": "话术删除成功"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/scripts/products', methods=['POST'])
+def create_product():
+    try:
+        data = request.json
+        product = data.get('product', '')
+        
+        if not product:
+            return jsonify({"success": False, "message": "产品名称不能为空"})
+        
+        script_file = os.path.join('话术文件', f'{product}.json')
+        if os.path.exists(script_file):
+            return jsonify({"success": False, "message": f"产品 {product} 已存在"})
+        
+        # 创建新的产品文件，初始为空对象
+        with open(script_file, 'w', encoding='utf-8') as f:
+            json.dump({}, f, ensure_ascii=False, indent=2)
+        
+        return jsonify({"success": True, "message": f"产品 {product} 创建成功"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/scripts/products/<product>', methods=['DELETE'])
+def delete_product(product):
+    try:
+        script_file = os.path.join('话术文件', f'{product}.json')
+        if not os.path.exists(script_file):
+            return jsonify({"success": False, "message": f"产品 {product} 不存在"})
+        
+        # 删除产品文件
+        os.remove(script_file)
+        
+        return jsonify({"success": True, "message": f"产品 {product} 删除成功"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/scripts/<product>/categories', methods=['POST'])
+def create_category(product):
+    try:
+        data = request.json
+        category = data.get('category', '')
+        
+        if not category:
+            return jsonify({"success": False, "message": "类目名称不能为空"})
+        
+        script_file = os.path.join('话术文件', f'{product}.json')
+        if not os.path.exists(script_file):
+            return jsonify({"success": False, "message": f"产品 {product} 不存在"})
+        
+        with open(script_file, 'r', encoding='utf-8') as f:
+            scripts = json.load(f)
+        
+        if category in scripts:
+            return jsonify({"success": False, "message": f"类目 {category} 已存在"})
+        
+        scripts[category] = []
+        
+        with open(script_file, 'w', encoding='utf-8') as f:
+            json.dump(scripts, f, ensure_ascii=False, indent=2)
+        
+        return jsonify({"success": True, "message": f"类目 {category} 创建成功"})
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+@app.route('/api/scripts/<product>/categories/<category>', methods=['DELETE'])
+def delete_category(product, category):
+    try:
+        script_file = os.path.join('话术文件', f'{product}.json')
+        if not os.path.exists(script_file):
+            return jsonify({"success": False, "message": f"产品 {product} 不存在"})
+        
+        with open(script_file, 'r', encoding='utf-8') as f:
+            scripts = json.load(f)
+        
+        if category not in scripts:
+            return jsonify({"success": False, "message": f"类目 {category} 不存在"})
+        
+        del scripts[category]
+        
+        with open(script_file, 'w', encoding='utf-8') as f:
+            json.dump(scripts, f, ensure_ascii=False, indent=2)
+        
+        return jsonify({"success": True, "message": f"类目 {category} 删除成功"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
@@ -425,14 +526,15 @@ def start_batch_control():
         return jsonify({"success": False, "message": "分类总概率不能超过100%"})
     
     try:
-        with open('话术.json', 'r', encoding='utf-8') as f:
-            scripts = json.load(f)
-        
-        if product not in scripts:
+        script_file = os.path.join('话术文件', f'{product}.json')
+        if not os.path.exists(script_file):
             return jsonify({"success": False, "message": f"产品 {product} 不存在"})
         
+        with open(script_file, 'r', encoding='utf-8') as f:
+            scripts = json.load(f)
+        
         for category in category_probabilities.keys():
-            if category not in scripts[product]:
+            if category not in scripts:
                 return jsonify({"success": False, "message": f"产品 {product} 中的分类 {category} 不存在"})
         
         batch_control_running = True
@@ -501,17 +603,18 @@ def batch_control_worker(product, category_probabilities, speed):
         global_keyboard_listener.start()
     
     try:
-        with open('话术.json', 'r', encoding='utf-8') as f:
-            scripts = json.load(f)
-        
-        if product not in scripts:
+        script_file = os.path.join('话术文件', f'{product}.json')
+        if not os.path.exists(script_file):
             batch_control_status["status"] = "error"
             batch_control_status["message"] = f"产品 {product} 不存在"
             batch_control_running = False
             return
         
+        with open(script_file, 'r', encoding='utf-8') as f:
+            scripts = json.load(f)
+        
         for category in category_probabilities.keys():
-            if category not in scripts[product]:
+            if category not in scripts:
                 batch_control_status["status"] = "error"
                 batch_control_status["message"] = f"产品 {product} 中的分类 {category} 不存在"
                 batch_control_running = False
@@ -557,7 +660,7 @@ def batch_control_worker(product, category_probabilities, speed):
                 if not selected_category:
                     continue
                 
-                messages = scripts.get(product, {}).get(selected_category, [])
+                messages = scripts.get(selected_category, [])
                 
                 if not messages:
                     continue
