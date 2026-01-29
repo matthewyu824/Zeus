@@ -804,30 +804,34 @@
                         <h3>群控功能</h3>
                     </div>
                     <div class="dashboard-section-content">
-                        <div style="margin-bottom: 15px;">
-                            <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 8px; display: block;">选择产品</label>
-                            <div id="batchProductButtons" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                                <div class="empty-state" style="flex: 1; padding: 10px; font-size: 12px;">
-                                    <div class="icon">⏳</div>
-                                    <div>正在加载产品...</div>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="categoryProbabilityCard" style="display: none;">
-                            <div style="margin-bottom: 12px;">
-                                <div class="preset-buttons" style="margin-bottom: 12px;">
-                                    <button class="preset-button" onclick="applyPreset('balanced')" style="padding: 6px 12px; font-size: 12px;">均衡</button>
-                                    <button class="preset-button" onclick="applyPreset('focus')" style="padding: 6px 12px; font-size: 12px;">重点</button>
-                                    <button class="preset-button" onclick="applyPreset('random')" style="padding: 6px 12px; font-size: 12px;">随机</button>
-                                </div>
-                                <div id="categoryProbabilitySettings" style="max-height: 180px; overflow-y: auto; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px;">
-                                    <div class="empty-state" style="padding: 20px;">
+                        <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                            <div style="flex: 1;">
+                                <label style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 8px; display: block;">选择产品</label>
+                                <div id="batchProductButtons" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                    <div class="empty-state" style="flex: 1; padding: 10px; font-size: 12px;">
                                         <div class="icon">⏳</div>
-                                        <div>请先选择产品</div>
+                                        <div>正在加载产品...</div>
                                     </div>
                                 </div>
-                                <div style="margin-top: 10px; color: rgba(255,255,255,0.6); font-size: 12px;">
-                                    <span id="totalCategoryProbability">类目总概率：0%</span>
+                            </div>
+                            <div style="flex: 1;">
+                                <div id="categoryProbabilityCard" style="display: block;">
+                                    <div style="margin-bottom: 12px;">
+                                        <div class="preset-buttons" style="margin-bottom: 12px;">
+                                            <button class="preset-button" onclick="applyPreset('balanced')" style="padding: 6px 12px; font-size: 12px;">均衡</button>
+                                            <button class="preset-button" onclick="applyPreset('focus')" style="padding: 6px 12px; font-size: 12px;">重点</button>
+                                            <button class="preset-button" onclick="applyPreset('random')" style="padding: 6px 12px; font-size: 12px;">随机</button>
+                                        </div>
+                                        <div id="categoryProbabilitySettings" style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px;">
+                                            <div class="empty-state" style="padding: 20px;">
+                                                <div class="icon">⏳</div>
+                                                <div>请先选择产品</div>
+                                            </div>
+                                        </div>
+                                        <div style="margin-top: 10px; color: rgba(255,255,255,0.6); font-size: 12px;">
+                                            <span id="totalCategoryProbability">类目总概率：0%</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1576,23 +1580,24 @@
             products.forEach(product => {
                 if (containerId === 'productButtons') {
                     html += `<div style="display: flex; align-items: center; gap: 4px;">
-                        <button class="product-button" onclick="selectProduct('${product}', '${containerId}')">${product}</button>
+                        <button class="product-button" onclick="selectProduct('${product}', '${containerId}', this)">${product}</button>
                         <button class="delete-script-btn" onclick="deleteProduct('${product}')" style="padding: 4px 8px; font-size: 11px;">删除</button>
                     </div>`;
                 } else {
-                    html += `<button class="product-button" onclick="selectProduct('${product}', '${containerId}')">${product}</button>`;
+                    html += `<button class="product-button" onclick="selectProduct('${product}', '${containerId}', this)">${product}</button>`;
                 }
             });
             
             container.innerHTML = html;
         }
 
-        async function selectProduct(product, containerId) {
+        async function selectProduct(product, containerId, button) {
+            console.log('选择产品:', product, '容器:', containerId);
             const container = document.getElementById(containerId);
             const buttons = container.querySelectorAll('.product-button');
             
             buttons.forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            button.classList.add('active');
             
             if (containerId === 'productButtons') {
                 selectedProduct = product;
@@ -1600,9 +1605,15 @@
                 document.getElementById('addScriptCard').style.display = 'block';
                 document.getElementById('scriptsListCard').style.display = 'block';
             } else if (containerId === 'batchProductButtons') {
+                console.log('选择群控产品:', product);
                 selectedBatchProduct = product;
                 await loadCategoryProbabilitySettingsByProduct(product);
-                document.getElementById('categoryProbabilityCard').style.display = 'block';
+                const card = document.getElementById('categoryProbabilityCard');
+                console.log('概率卡片元素:', card);
+                if (card) {
+                    card.style.display = 'block';
+                    console.log('概率卡片显示状态:', card.style.display);
+                }
             }
         }
 
@@ -1641,37 +1652,55 @@
 
         async function loadCategoryProbabilitySettingsByProduct(product) {
             try {
+                console.log('加载产品分类:', product);
                 const response = await fetch(`/api/scripts/${encodeURIComponent(product)}/categories`);
                 const data = await response.json();
+                console.log('分类数据:', data);
                 
                 if (data.success && data.categories && data.categories.length > 0) {
+                    console.log('加载概率设置:', data.categories);
                     loadCategoryProbabilitySettings(data.categories, product);
+                } else {
+                    console.log('没有分类数据:', data);
+                    const settingsDiv = document.getElementById('categoryProbabilitySettings');
+                    settingsDiv.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">⚠️</div>
+                            <div>产品 ${product} 没有分类</div>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error('加载分类失败:', error);
+                const settingsDiv = document.getElementById('categoryProbabilitySettings');
+                settingsDiv.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">❌</div>
+                        <div>加载分类失败: ${error.message}</div>
+                    </div>
+                `;
             }
         }
 
         function loadCategoryProbabilitySettings(categories, product) {
             const settingsDiv = document.getElementById('categoryProbabilitySettings');
             
-            const avgProbability = Math.round(100 / categories.length);
-            
             let html = '';
-            categories.forEach(category => {
+            categories.forEach((category, index) => {
+                const probability = index === 0 ? 100 : 0;
                 html += `
                     <div class="probability-row">
                         <span class="probability-label">${category}</span>
                         <div class="probability-control">
                             <input type="range" class="probability-slider" 
                                    data-category="${category}" 
-                                   value="${avgProbability}" 
+                                   value="${probability}" 
                                    min="0" 
                                    max="100"
                                    oninput="updateSliderValue(this)">
                             <input type="number" class="probability-input" 
                                    data-category="${category}" 
-                                   value="${avgProbability}" 
+                                   value="${probability}" 
                                    min="0" 
                                    max="100"
                                    onchange="updateSliderFromInput(this)">
@@ -1687,14 +1716,52 @@
         function updateSliderValue(slider) {
             const category = slider.getAttribute('data-category');
             const input = document.querySelector(`.probability-input[data-category="${category}"]`);
-            input.value = slider.value;
+            
+            // 计算当前总概率
+            const inputs = document.querySelectorAll('#categoryProbabilitySettings .probability-input');
+            let currentTotal = 0;
+            inputs.forEach(inp => {
+                if (inp !== input) {
+                    currentTotal += parseInt(inp.value) || 0;
+                }
+            });
+            
+            // 限制新值，确保总概率不超过100%
+            let newValue = parseInt(slider.value) || 0;
+            const maxAllowed = 100 - currentTotal;
+            newValue = Math.min(newValue, maxAllowed);
+            newValue = Math.max(newValue, 0); // 确保不小于0
+            
+            // 更新滑块和输入框
+            slider.value = newValue;
+            input.value = newValue;
+            
             updateTotalCategoryProbability();
         }
 
         function updateSliderFromInput(input) {
             const category = input.getAttribute('data-category');
             const slider = document.querySelector(`.probability-slider[data-category="${category}"]`);
-            slider.value = input.value;
+            
+            // 计算当前总概率
+            const inputs = document.querySelectorAll('#categoryProbabilitySettings .probability-input');
+            let currentTotal = 0;
+            inputs.forEach(inp => {
+                if (inp !== input) {
+                    currentTotal += parseInt(inp.value) || 0;
+                }
+            });
+            
+            // 限制新值，确保总概率不超过100%
+            let newValue = parseInt(input.value) || 0;
+            const maxAllowed = 100 - currentTotal;
+            newValue = Math.min(newValue, maxAllowed);
+            newValue = Math.max(newValue, 0); // 确保不小于0
+            
+            // 更新输入框和滑块
+            input.value = newValue;
+            slider.value = newValue;
+            
             updateTotalCategoryProbability();
         }
 
