@@ -698,25 +698,21 @@
                 <span class="icon">📝</span>
                 <span>话术管理</span>
             </div>
-            <div class="nav-item" data-section="batch-messages">
-                <span class="icon">📢</span>
-                <span>群发消息</span>
+            <div class="nav-item" data-section="message-scripts">
+                <span class="icon">📄</span>
+                <span>消息话术管理</span>
             </div>
             <div class="nav-item" data-section="devices">
                 <span class="icon">📱</span>
                 <span>设备管理</span>
             </div>
-            <div class="nav-item" data-section="scripts">
-                <span class="icon">📝</span>
-                <span>话术管理</span>
-            </div>
         </div>
     </div>
 
     <div class="main-content">
-        <div id="scripts" class="content-section">
+        <div id="message-scripts" class="content-section">
             <div class="section-header">
-                <h2>📝 话术管理</h2>
+                <h2>📝 消息话术管理</h2>
                 <p>管理定期发送和群发消息的话术</p>
             </div>
             <div class="card">
@@ -748,6 +744,58 @@
                     <div style="margin-top: 15px;">
                         <input type="text" id="newBatchScript" class="input-field" placeholder="输入新的话术">
                         <button id="addBatchScriptBtn" class="btn btn-primary" onclick="addBatchScript()">添加话术</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="scripts" class="content-section">
+            <div class="section-header">
+                <h2>📝 话术管理</h2>
+                <p>管理产品话术和分类</p>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <span class="icon">📝</span>
+                    <span>话术管理</span>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="color: rgba(255,255,255,0.7); font-size: 13px; display: block;">选择产品</label>
+                        <button class="btn btn-primary" onclick="showCreateProductModal()" style="padding: 6px 12px; font-size: 12px;">
+                            + 新建产品
+                        </button>
+                    </div>
+                    <div id="productButtons" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <div class="empty-state" style="flex: 1; padding: 10px; font-size: 12px;">
+                            <div class="icon">⏳</div>
+                            <div>正在加载产品...</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="addScriptCard" style="display: none; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="color: rgba(255,255,255,0.7); font-size: 13px; display: block;">选择类目</label>
+                        <button class="btn btn-primary" onclick="showCreateCategoryModal()" style="padding: 6px 12px; font-size: 12px;">
+                            + 新建类目
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <select id="scriptCategorySelect" class="input-field" style="flex: 1;" onchange="loadScriptsByCategory()">
+                            <option value="">选择类目</option>
+                        </select>
+                        <input type="text" id="newScriptInput" class="input-field" placeholder="输入新话术" style="flex: 1;">
+                        <button id="addScriptBtn" class="btn btn-primary" onclick="addScript()" style="padding: 8px 16px; font-size: 13px;">
+                            添加
+                        </button>
+                    </div>
+                </div>
+                <div id="scriptsListCard" style="display: none;">
+                    <div id="scriptsDisplay" style="max-height: 400px; overflow-y: auto; background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px;">
+                        <div class="empty-state" style="padding: 20px;">
+                            <div class="icon">📝</div>
+                            <div>请先选择类目</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -831,9 +879,6 @@
                             <option value="">选择设备</option>
                         </select>
                         <input type="text" id="batchMessageInput" class="input-field" placeholder="或直接输入要发送的消息" style="margin-bottom: 12px;">
-                        <select id="batchMessageSelect" class="input-field" style="margin-bottom: 12px;">
-                            <option value="">选择群发消息</option>
-                        </select>
                         <div class="checkbox-group" style="margin-bottom: 12px;">
                             <input type="checkbox" id="useBatchFile" onchange="toggleBatchFileMode()">
                             <label for="useBatchFile">从文件读取话术</label>
@@ -924,11 +969,95 @@
                     </div>
                 </div>
 
-                <div class="dashboard-section">
-                    <div class="dashboard-section-header">
-                        <span class="icon">⏰</span>
-                        <h3>定期发送</h3>
+                <div style="display: flex; gap: 20px;">
+                    <div class="dashboard-section" style="flex: 1;">
+                        <div class="dashboard-section-header">
+                            <span class="icon">⏰</span>
+                            <h3>定期发送</h3>
+                        </div>
+                        <div class="dashboard-section-content">
+                            <div style="margin-bottom: 12px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <input type="checkbox" id="useScheduledFile" onchange="toggleScheduledFileMode()" style="width: auto;">
+                                    <label for="useScheduledFile" style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0;">从文件读取话术</label>
+                                </div>
+                                <input type="text" id="scheduledMessageInput" class="input-field" placeholder="输入要定期发送的消息" style="margin-bottom: 10px;">
+                                <select id="scheduledFileMessageSelect" class="input-field" placeholder="选择文件中的话术" style="margin-bottom: 10px; display: none;">
+                                    <option value="">选择文件中的话术</option>
+                                </select>
+                                <div style="display: flex; gap: 10px;">
+                                    <select id="scheduledGroupSelect" class="input-field" style="flex: 1;">
+                                        <option value="random">随机设备</option>
+                                    </select>
+                                    <input type="number" id="intervalInput" class="input-field" placeholder="间隔(秒)" min="1" value="60" style="width: 100px;">
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                                <button id="startScheduledBtn" class="btn btn-success" onclick="startScheduledSend()" style="flex: 1; padding: 10px; font-size: 13px;">
+                                    开始发送
+                                </button>
+                                <button id="stopScheduledBtn" class="btn btn-danger" onclick="stopScheduledSend()" disabled style="flex: 1; padding: 10px; font-size: 13px;">
+                                    停止发送
+                                </button>
+                            </div>
+                            <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                                <div class="stat-card" style="padding: 12px;">
+                                    <div class="stat-value" id="scheduledSentCount" style="font-size: 20px;">0</div>
+                                    <div class="stat-label" style="font-size: 11px;">已发送</div>
+                                </div>
+                                <div class="stat-card" style="padding: 12px;">
+                                    <div class="stat-value" id="nextSendTime" style="font-size: 14px;">-</div>
+                                    <div class="stat-label" style="font-size: 11px;">下次发送</div>
+                                </div>
+                            </div>
+                            <div id="scheduledStatus" class="status-text" style="margin-top: 10px; font-size: 13px;">输入消息、选择设备并设置时间间隔后点击开始</div>
+                        </div>
                     </div>
+
+                    <div class="dashboard-section" style="flex: 1;">
+                        <div class="dashboard-section-header">
+                            <span class="icon">⏰</span>
+                            <h3>定期发送</h3>
+                        </div>
+                        <div class="dashboard-section-content">
+                            <div style="margin-bottom: 12px;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <input type="checkbox" id="useScheduledFile2" onchange="toggleScheduledFileMode2()" style="width: auto;">
+                                    <label for="useScheduledFile2" style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0;">从文件读取话术</label>
+                                </div>
+                                <input type="text" id="scheduledMessageInput2" class="input-field" placeholder="输入要定期发送的消息" style="margin-bottom: 10px;">
+                                <select id="scheduledFileMessageSelect2" class="input-field" placeholder="选择文件中的话术" style="margin-bottom: 10px; display: none;">
+                                    <option value="">选择文件中的话术</option>
+                                </select>
+                                <div style="display: flex; gap: 10px;">
+                                    <select id="scheduledGroupSelect2" class="input-field" style="flex: 1;">
+                                        <option value="random">随机设备</option>
+                                    </select>
+                                    <input type="number" id="intervalInput2" class="input-field" placeholder="间隔(秒)" min="1" value="60" style="width: 100px;">
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                                <button id="startScheduledBtn2" class="btn btn-success" onclick="startScheduledSend2()" style="flex: 1; padding: 10px; font-size: 13px;">
+                                    开始发送
+                                </button>
+                                <button id="stopScheduledBtn2" class="btn btn-danger" onclick="stopScheduledSend2()" disabled style="flex: 1; padding: 10px; font-size: 13px;">
+                                    停止发送
+                                </button>
+                            </div>
+                            <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                                <div class="stat-card" style="padding: 12px;">
+                                    <div class="stat-value" id="scheduledSentCount2" style="font-size: 20px;">0</div>
+                                    <div class="stat-label" style="font-size: 11px;">已发送</div>
+                                </div>
+                                <div class="stat-card" style="padding: 12px;">
+                                    <div class="stat-value" id="nextSendTime2" style="font-size: 14px;">-</div>
+                                    <div class="stat-label" style="font-size: 11px;">下次发送</div>
+                                </div>
+                            </div>
+                            <div id="scheduledStatus2" class="status-text" style="margin-top: 10px; font-size: 13px;">输入消息、选择设备并设置时间间隔后点击开始</div>
+                        </div>
+                    </div>
+                </div>
                     <div class="dashboard-section-content">
                         <div style="margin-bottom: 12px;">
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
@@ -2374,7 +2503,7 @@
             navItems.forEach(item => {
                 item.addEventListener('click', function() {
                     const section = this.getAttribute('data-section');
-                    if (section === 'scripts') {
+                    if (section === 'message-scripts') {
                         loadScheduledScripts();
                         loadBatchScripts();
                     }
@@ -2474,17 +2603,14 @@
         function toggleBatchFileMode() {
             const useBatchFile = document.getElementById('useBatchFile').checked;
             const batchMessageInput = document.getElementById('batchMessageInput');
-            const batchMessageSelect = document.getElementById('batchMessageSelect');
             const batchFileMessageSelect = document.getElementById('batchFileMessageSelect');
             
             if (useBatchFile) {
                 batchMessageInput.style.display = 'none';
-                batchMessageSelect.style.display = 'none';
                 batchFileMessageSelect.style.display = 'block';
                 loadBatchMessages();
             } else {
                 batchMessageInput.style.display = 'block';
-                batchMessageSelect.style.display = 'block';
                 batchFileMessageSelect.style.display = 'none';
             }
         }
@@ -2864,6 +2990,211 @@
             if (this.value) {
                 batchMessageInput.value = '';
             }
+        });
+
+        // 第二个定期发送功能区的函数
+        function toggleScheduledFileMode2() {
+            const useScheduledFile = document.getElementById('useScheduledFile2').checked;
+            const scheduledMessageInput = document.getElementById('scheduledMessageInput2');
+            const scheduledFileMessageSelect = document.getElementById('scheduledFileMessageSelect2');
+            
+            if (useScheduledFile) {
+                scheduledMessageInput.style.display = 'none';
+                scheduledFileMessageSelect.style.display = 'block';
+                loadScheduledMessages2();
+            } else {
+                scheduledMessageInput.style.display = 'block';
+                scheduledFileMessageSelect.style.display = 'none';
+            }
+        }
+
+        async function loadScheduledMessages2() {
+            try {
+                const response = await fetch('/api/scheduled-messages');
+                const data = await response.json();
+                
+                const scheduledFileMessageSelect = document.getElementById('scheduledFileMessageSelect2');
+                if (data.success && data.messages) {
+                    scheduledFileMessageSelect.innerHTML = '<option value="">选择文件中的话术</option>';
+                    data.messages.forEach(message => {
+                        scheduledFileMessageSelect.innerHTML += `<option value="${message}">${message}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('加载定期发送话术失败:', error);
+            }
+        }
+
+        async function startScheduledSend2() {
+            const scheduledMessageInput = document.getElementById('scheduledMessageInput2');
+            const scheduledGroupSelect = document.getElementById('scheduledGroupSelect2');
+            const intervalInput = document.getElementById('intervalInput2');
+            const startScheduledBtn = document.getElementById('startScheduledBtn2');
+            const stopScheduledBtn = document.getElementById('stopScheduledBtn2');
+            const scheduledStatus = document.getElementById('scheduledStatus2');
+            const useScheduledFile = document.getElementById('useScheduledFile2').checked;
+            
+            let message = '';
+            if (!useScheduledFile) {
+                message = scheduledMessageInput.value.trim();
+                if (!message) {
+                    scheduledStatus.textContent = '请输入消息内容';
+                    scheduledStatus.className = 'status-text error';
+                    return;
+                }
+            }
+            
+            const groupId = scheduledGroupSelect.value;
+            const interval = parseInt(intervalInput.value);
+            
+            if (!groupId) {
+                scheduledStatus.textContent = '请选择设备';
+                scheduledStatus.className = 'status-text error';
+                return;
+            }
+            
+            if (!interval || interval < 1) {
+                scheduledStatus.textContent = '请输入有效的时间间隔';
+                scheduledStatus.className = 'status-text error';
+                return;
+            }
+            
+            startScheduledBtn.disabled = true;
+            stopScheduledBtn.disabled = false;
+            scheduledStatus.innerHTML = '<span class="loading"></span>正在启动定期发送...';
+            
+            try {
+                const response = await fetch('/api/scheduled/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        message: message, 
+                        group_id: groupId, 
+                        interval: interval,
+                        use_file: useScheduledFile
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    scheduledStatus.textContent = data.message;
+                    scheduledStatus.className = 'status-text success';
+                    startScheduledStatusPolling2();
+                } else {
+                    scheduledStatus.textContent = data.message;
+                    scheduledStatus.className = 'status-text error';
+                    startScheduledBtn.disabled = false;
+                    stopScheduledBtn.disabled = true;
+                }
+            } catch (error) {
+                scheduledStatus.textContent = '启动失败：' + error.message;
+                scheduledStatus.className = 'status-text error';
+                startScheduledBtn.disabled = false;
+                stopScheduledBtn.disabled = true;
+            }
+        }
+
+        async function stopScheduledSend2() {
+            const startScheduledBtn = document.getElementById('startScheduledBtn2');
+            const stopScheduledBtn = document.getElementById('stopScheduledBtn2');
+            const scheduledStatus = document.getElementById('scheduledStatus2');
+            
+            try {
+                const response = await fetch('/api/scheduled/stop', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    scheduledStatus.textContent = data.message;
+                    scheduledStatus.className = 'status-text success';
+                    startScheduledBtn.disabled = false;
+                    stopScheduledBtn.disabled = true;
+                    
+                    if (scheduledStatusInterval2) {
+                        clearInterval(scheduledStatusInterval2);
+                        scheduledStatusInterval2 = null;
+                    }
+                } else {
+                    scheduledStatus.textContent = data.message;
+                    scheduledStatus.className = 'status-text error';
+                }
+            } catch (error) {
+                scheduledStatus.textContent = '停止失败：' + error.message;
+                scheduledStatus.className = 'status-text error';
+            }
+        }
+
+        let scheduledStatusInterval2 = null;
+
+        function startScheduledStatusPolling2() {
+            if (scheduledStatusInterval2) {
+                clearInterval(scheduledStatusInterval2);
+            }
+            
+            scheduledStatusInterval2 = setInterval(async () => {
+                try {
+                    const response = await fetch('/api/scheduled/status');
+                    const data = await response.json();
+                    
+                    const scheduledStatus = document.getElementById('scheduledStatus2');
+                    const startScheduledBtn = document.getElementById('startScheduledBtn2');
+                    const stopScheduledBtn = document.getElementById('stopScheduledBtn2');
+                    
+                    scheduledStatus.textContent = data.message;
+                    
+                    document.getElementById('scheduledSentCount2').textContent = data.sent_count || 0;
+                    document.getElementById('nextSendTime2').textContent = data.next_send_time || '-';
+                    
+                    if (data.status === 'running') {
+                        scheduledStatus.className = 'status-text';
+                    } else if (data.status === 'idle' || data.status === 'stopped') {
+                        scheduledStatus.className = 'status-text success';
+                        startScheduledBtn.disabled = false;
+                        stopScheduledBtn.disabled = true;
+                        clearInterval(scheduledStatusInterval2);
+                        scheduledStatusInterval2 = null;
+                    } else if (data.status === 'error') {
+                        scheduledStatus.className = 'status-text error';
+                        startScheduledBtn.disabled = false;
+                        stopScheduledBtn.disabled = true;
+                        clearInterval(scheduledStatusInterval2);
+                        scheduledStatusInterval2 = null;
+                    }
+                } catch (error) {
+                    console.error('获取定期发送状态失败:', error);
+                }
+            }, 500);
+        }
+
+        // 为第二个定期发送功能区添加设备选项
+        async function loadGroupsForScheduled2() {
+            try {
+                const response = await fetch('/api/groups');
+                const data = await response.json();
+                
+                const scheduledGroupSelect2 = document.getElementById('scheduledGroupSelect2');
+                
+                if (data.success && data.data) {
+                    const groups = data.data;
+                    const groupPoints = groups.group_points || {};
+                    const groupIds = Object.keys(groupPoints);
+                    
+                    scheduledGroupSelect2.innerHTML = '<option value="random">随机设备</option>';
+                    groupIds.forEach(groupId => {
+                        scheduledGroupSelect2.innerHTML += `<option value="${groupId}">${groupId}</option>`;
+                    });
+                }
+            } catch (error) {
+                console.error('加载设备列表失败:', error);
+            }
+        }
+
+        // 页面加载完成后为第二个定期发送功能区加载设备列表
+        document.addEventListener('DOMContentLoaded', function() {
+            loadGroupsForScheduled2();
         });
     </script>
 </body>
