@@ -897,6 +897,7 @@ def start_scheduled_send():
     group_id = data.get('group_id', '')
     interval = data.get('interval', 60)
     use_file = data.get('use_file', False)
+    product = data.get('product', '')
     
     if not group_id:
         return jsonify({"success": False, "message": "设备ID不能为空"})
@@ -907,6 +908,9 @@ def start_scheduled_send():
     if not use_file and not message:
         return jsonify({"success": False, "message": "消息内容不能为空"})
     
+    if use_file and not product:
+        return jsonify({"success": False, "message": "从文件读取话术时需要指定产品"})
+    
     try:
         groups_data = collector.load_groups()
         if groups_data is None:
@@ -916,7 +920,7 @@ def start_scheduled_send():
             return jsonify({"success": False, "message": f"设备 {group_id} 不存在"})
         
         scheduled_send_running = True
-        scheduled_send_thread = threading.Thread(target=scheduled_send_worker, args=(message, group_id, interval, use_file))
+        scheduled_send_thread = threading.Thread(target=scheduled_send_worker, args=(message, group_id, interval, use_file, product))
         scheduled_send_thread.start()
         
         if global_keyboard_listener is None:
@@ -945,7 +949,7 @@ def stop_scheduled_send():
 def get_scheduled_send_status():
     return jsonify(scheduled_send_status)
 
-def scheduled_send_worker(message, group_id, interval, use_file):
+def scheduled_send_worker(message, group_id, interval, use_file, product=''):
     global scheduled_send_status, scheduled_send_running
     
     # 初始化已发送话术记录
@@ -955,11 +959,36 @@ def scheduled_send_worker(message, group_id, interval, use_file):
     # 如果使用文件，加载话术列表
     if use_file:
         try:
-            with open('定期发送话术.json', 'r', encoding='utf-8') as f:
-                scheduled_messages = json.load(f)
+            script_file = os.path.join('话术文件', f'{product}.json')
+            if not os.path.exists(script_file):
+                scheduled_send_status["status"] = "error"
+                scheduled_send_status["message"] = f"产品 {product} 的话术文件不存在"
+                scheduled_send_running = False
+                return
+            
+            with open(script_file, 'r', encoding='utf-8') as f:
+                scripts = json.load(f)
+            
+            # 尝试获取'好评'或'好评：'分类的话术
+            if '好评' in scripts:
+                scheduled_messages = scripts['好评']
+            elif '好评：' in scripts:
+                scheduled_messages = scripts['好评：']
+            else:
+                scheduled_send_status["status"] = "error"
+                scheduled_send_status["message"] = f"产品 {product} 下没有'好评'或'好评：'分类的话术"
+                scheduled_send_running = False
+                return
+            
+            if not scheduled_messages:
+                scheduled_send_status["status"] = "error"
+                scheduled_send_status["message"] = f"产品 {product} 的'好评'或'好评：'分类下没有话术"
+                scheduled_send_running = False
+                return
+                
         except Exception as e:
             scheduled_send_status["status"] = "error"
-            scheduled_send_status["message"] = f"无法读取定期发送话术文件：{str(e)}"
+            scheduled_send_status["message"] = f"无法读取产品话术文件：{str(e)}"
             scheduled_send_running = False
             return
     

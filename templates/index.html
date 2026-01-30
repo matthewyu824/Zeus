@@ -973,17 +973,17 @@
                     <div class="dashboard-section" style="flex: 1;">
                         <div class="dashboard-section-header">
                             <span class="icon">⏰</span>
-                            <h3>定期发送</h3>
+                            <h3>定期发送1</h3>
                         </div>
                         <div class="dashboard-section-content">
                             <div style="margin-bottom: 12px;">
                                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
                                     <input type="checkbox" id="useScheduledFile" onchange="toggleScheduledFileMode()" style="width: auto;">
-                                    <label for="useScheduledFile" style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0;">从文件读取话术</label>
+                                    <label for="useScheduledFile" style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0;">从群控产品好评话术读取</label>
                                 </div>
                                 <input type="text" id="scheduledMessageInput" class="input-field" placeholder="输入要定期发送的消息" style="margin-bottom: 10px;">
-                                <select id="scheduledFileMessageSelect" class="input-field" placeholder="选择文件中的话术" style="margin-bottom: 10px; display: none;">
-                                    <option value="">选择文件中的话术</option>
+                                <select id="scheduledFileMessageSelect" class="input-field" placeholder="选择好评话术" style="margin-bottom: 10px; display: none;">
+                                    <option value="">选择好评话术</option>
                                 </select>
                                 <div style="display: flex; gap: 10px;">
                                     <select id="scheduledGroupSelect" class="input-field" style="flex: 1;">
@@ -1010,14 +1010,14 @@
                                     <div class="stat-label" style="font-size: 11px;">下次发送</div>
                                 </div>
                             </div>
-                            <div id="scheduledStatus" class="status-text" style="margin-top: 10px; font-size: 13px;">输入消息、选择设备并设置时间间隔后点击开始</div>
+                            <div id="scheduledStatus" class="status-text" style="margin-top: 10px; font-size: 13px;">输入消息或选择群控产品好评话术、选择设备并设置时间间隔后点击开始</div>
                         </div>
                     </div>
 
                     <div class="dashboard-section" style="flex: 1;">
                         <div class="dashboard-section-header">
                             <span class="icon">⏰</span>
-                            <h3>定期发送</h3>
+                            <h3>定期发送2</h3>
                         </div>
                         <div class="dashboard-section-content">
                             <div style="margin-bottom: 12px;">
@@ -1056,44 +1056,6 @@
                             </div>
                             <div id="scheduledStatus2" class="status-text" style="margin-top: 10px; font-size: 13px;">输入消息、选择设备并设置时间间隔后点击开始</div>
                         </div>
-                    </div>
-                </div>
-                    <div class="dashboard-section-content">
-                        <div style="margin-bottom: 12px;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                <input type="checkbox" id="useScheduledFile" onchange="toggleScheduledFileMode()" style="width: auto;">
-                                <label for="useScheduledFile" style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0;">从文件读取话术</label>
-                            </div>
-                            <input type="text" id="scheduledMessageInput" class="input-field" placeholder="输入要定期发送的消息" style="margin-bottom: 10px;">
-                            <select id="scheduledFileMessageSelect" class="input-field" placeholder="选择文件中的话术" style="margin-bottom: 10px; display: none;">
-                                <option value="">选择文件中的话术</option>
-                            </select>
-                            <div style="display: flex; gap: 10px;">
-                                <select id="scheduledGroupSelect" class="input-field" style="flex: 1;">
-                                    <option value="random">随机设备</option>
-                                </select>
-                                <input type="number" id="intervalInput" class="input-field" placeholder="间隔(秒)" min="1" value="60" style="width: 100px;">
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
-                            <button id="startScheduledBtn" class="btn btn-success" onclick="startScheduledSend()" style="flex: 1; padding: 10px; font-size: 13px;">
-                                开始发送
-                            </button>
-                            <button id="stopScheduledBtn" class="btn btn-danger" onclick="stopScheduledSend()" disabled style="flex: 1; padding: 10px; font-size: 13px;">
-                                停止发送
-                            </button>
-                        </div>
-                        <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                            <div class="stat-card" style="padding: 12px;">
-                                <div class="stat-value" id="scheduledSentCount" style="font-size: 20px;">0</div>
-                                <div class="stat-label" style="font-size: 11px;">已发送</div>
-                            </div>
-                            <div class="stat-card" style="padding: 12px;">
-                                <div class="stat-value" id="nextSendTime" style="font-size: 14px;">-</div>
-                                <div class="stat-label" style="font-size: 11px;">下次发送</div>
-                            </div>
-                        </div>
-                        <div id="scheduledStatus" class="status-text" style="margin-top: 10px; font-size: 13px;">输入消息、选择设备并设置时间间隔后点击开始</div>
                     </div>
                 </div>
             </div>
@@ -1803,6 +1765,12 @@
                 if (card) {
                     card.style.display = 'block';
                     console.log('概率卡片显示状态:', card.style.display);
+                }
+                
+                // 如果定期发送1的"从群控产品好评话术读取"复选框被选中，重新加载话术列表
+                const useScheduledFile = document.getElementById('useScheduledFile');
+                if (useScheduledFile && useScheduledFile.checked) {
+                    await loadScheduledMessages();
                 }
             }
         }
@@ -2649,15 +2617,34 @@
 
         async function loadScheduledMessages() {
             try {
-                const response = await fetch('/api/scheduled-messages');
-                const data = await response.json();
-                
                 const scheduledFileMessageSelect = document.getElementById('scheduledFileMessageSelect');
-                if (data.success && data.messages) {
-                    scheduledFileMessageSelect.innerHTML = '<option value="">选择文件中的话术</option>';
-                    data.messages.forEach(message => {
+                
+                if (!selectedBatchProduct) {
+                    scheduledFileMessageSelect.innerHTML = '<option value="">请先在群控功能中选择产品</option>';
+                    return;
+                }
+                
+                let response = await fetch(`/api/scripts/${encodeURIComponent(selectedBatchProduct)}/好评`);
+                let data = await response.json();
+                
+                let messages = [];
+                if (data.success && data.scripts) {
+                    messages = data.scripts;
+                } else {
+                    response = await fetch(`/api/scripts/${encodeURIComponent(selectedBatchProduct)}/好评：`);
+                    data = await response.json();
+                    if (data.success && data.scripts) {
+                        messages = data.scripts;
+                    }
+                }
+                
+                if (messages.length > 0) {
+                    scheduledFileMessageSelect.innerHTML = '<option value="">选择好评话术</option>';
+                    messages.forEach(message => {
                         scheduledFileMessageSelect.innerHTML += `<option value="${message}">${message}</option>`;
                     });
+                } else {
+                    scheduledFileMessageSelect.innerHTML = '<option value="">该产品下没有"好评"或"好评："分类的话术</option>';
                 }
             } catch (error) {
                 console.error('加载定期发送话术失败:', error);
@@ -2678,6 +2665,12 @@
                 message = scheduledMessageInput.value.trim();
                 if (!message) {
                     scheduledStatus.textContent = '请输入消息内容';
+                    scheduledStatus.className = 'status-text error';
+                    return;
+                }
+            } else {
+                if (!selectedBatchProduct) {
+                    scheduledStatus.textContent = '请先在群控功能中选择产品';
                     scheduledStatus.className = 'status-text error';
                     return;
                 }
@@ -2712,7 +2705,8 @@
                         message: message, 
                         group_id: groupId, 
                         interval: interval,
-                        use_file: useScheduledFile
+                        use_file: useScheduledFile,
+                        product: useScheduledFile ? selectedBatchProduct : ''
                     })
                 });
                 const data = await response.json();
