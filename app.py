@@ -1033,13 +1033,12 @@ def scheduled_send_worker(message, group_id, interval, use_file, product=''):
             # 获取未发送的话术
             unsent_messages = [msg for msg in scheduled_messages if msg not in sent_messages]
             
-            # 如果所有话术都已发送，清空已发送记录
+            # 如果所有话术都已发送，返回 None，停止发送
             if not unsent_messages:
-                sent_messages.clear()
-                unsent_messages = scheduled_messages[:]
+                return None
             
-            # 随机选择一条未发送的话术
-            selected_message = random.choice(unsent_messages)
+            # 按顺序选择下一条未发送的话术
+            selected_message = unsent_messages[0]
             # 记录到已发送列表
             sent_messages.append(selected_message)
             
@@ -1058,8 +1057,13 @@ def scheduled_send_worker(message, group_id, interval, use_file, product=''):
             # 获取要发送的消息
             current_message = get_next_message()
             if not current_message:
-                scheduled_send_status["message"] = "没有可用的话术"
-                continue
+                if use_file:
+                    scheduled_send_status["message"] = f"所有话术已发送完毕，共发送 {scheduled_send_status['sent_count']} 条"
+                    scheduled_send_status["status"] = "completed"
+                else:
+                    scheduled_send_status["message"] = "没有可用的话术"
+                scheduled_send_running = False
+                break
             
             target_group_id = group_id
             if group_id == 'random':
@@ -1084,8 +1088,10 @@ def scheduled_send_worker(message, group_id, interval, use_file, product=''):
             except Exception as e:
                 scheduled_send_status["message"] = f"发送失败：{str(e)}"
         
-        scheduled_send_status["status"] = "idle"
-        scheduled_send_status["message"] = "定期发送已停止"
+        # 只有在非完成状态下才重置为idle
+        if scheduled_send_status["status"] != "completed":
+            scheduled_send_status["status"] = "idle"
+            scheduled_send_status["message"] = "定期发送已停止"
         scheduled_send_status["next_send_time"] = None
         scheduled_send_running = False
         

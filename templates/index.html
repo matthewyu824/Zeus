@@ -2783,7 +2783,7 @@
                     
                     if (data.status === 'running') {
                         scheduledStatus.className = 'status-text';
-                    } else if (data.status === 'idle' || data.status === 'stopped') {
+                    } else if (data.status === 'idle' || data.status === 'stopped' || data.status === 'completed') {
                         scheduledStatus.className = 'status-text success';
                         startScheduledBtn.disabled = false;
                         stopScheduledBtn.disabled = true;
