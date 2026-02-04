@@ -1386,34 +1386,45 @@
 
         async function clickAllCommonPoints() {
             const batchDeviceSelect = document.getElementById('batchDeviceSelect');
-            const batchMessageSelect = document.getElementById('batchMessageSelect');
+            const batchFileMessageSelect = document.getElementById('batchFileMessageSelect');
             const batchMessageInput = document.getElementById('batchMessageInput');
             const clickAllBtn = document.getElementById('clickAllBtn');
             const clickAllStatus = document.getElementById('clickAllStatus');
             const useBatchFile = document.getElementById('useBatchFile').checked;
             
             const groupId = batchDeviceSelect.value.trim();
-            const selectedMessage = batchMessageSelect.value.trim();
+            const selectedMessage = batchFileMessageSelect.value.trim();
             const inputMessage = batchMessageInput.value.trim();
+            
+            console.log('=== 群发消息调试信息 ===');
+            console.log('设备ID:', groupId);
+            console.log('选择的消息:', selectedMessage);
+            console.log('输入的消息:', inputMessage);
+            console.log('使用文件:', useBatchFile);
+            console.log('最终消息:', inputMessage || selectedMessage);
             
             let message = inputMessage || selectedMessage;
             
             if (!groupId) {
+                console.log('验证失败：未选择设备');
                 clickAllStatus.textContent = '请选择设备';
                 clickAllStatus.className = 'status-text error';
                 return;
             }
             
             if (!useBatchFile && !message) {
+                console.log('验证失败：未输入消息');
                 clickAllStatus.textContent = '请输入或选择要群发的消息';
                 clickAllStatus.className = 'status-text error';
                 return;
             }
             
+            console.log('验证通过，准备发送请求...');
             clickAllBtn.disabled = true;
             clickAllStatus.innerHTML = '<span class="loading"></span>正在群发消息...';
             
             try {
+                console.log('发送请求到 /api/click-all');
                 const response = await fetch('/api/click-all', {
                     method: 'POST',
                     headers: {
@@ -1421,7 +1432,9 @@
                     },
                     body: JSON.stringify({ group_id: groupId, message: message, speed: '中', use_file: useBatchFile })
                 });
+                console.log('收到响应:', response);
                 const data = await response.json();
+                console.log('响应数据:', data);
                 
                 if (data.success) {
                     clickAllStatus.textContent = data.message;
@@ -1431,6 +1444,7 @@
                     clickAllStatus.className = 'status-text error';
                 }
             } catch (error) {
+                console.error('请求失败:', error);
                 clickAllStatus.textContent = '群发失败：' + error.message;
                 clickAllStatus.className = 'status-text error';
             }
@@ -2809,13 +2823,6 @@
                 
                 if (!stopBatchBtn.disabled) {
                     stopBatchControl();
-                }
-                
-                const startScheduledBtn = document.getElementById('startScheduledBtn');
-                const stopScheduledBtn = document.getElementById('stopScheduledBtn');
-                
-                if (!stopScheduledBtn.disabled) {
-                    stopScheduledSend();
                 }
             }
         });

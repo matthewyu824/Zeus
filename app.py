@@ -24,18 +24,12 @@ global_keyboard_listener = None
 
 def on_global_key_press(key):
     if key == keyboard.Key.esc:
-        global batch_control_running, scheduled_send_running
+        global batch_control_running
         
         if batch_control_running:
             batch_control_running = False
             batch_control_status["status"] = "idle"
             batch_control_status["message"] = "已按ESC键停止群控"
-        
-        if scheduled_send_running:
-            scheduled_send_running = False
-            scheduled_send_status["status"] = "idle"
-            scheduled_send_status["message"] = "已按ESC键停止定期发送"
-            scheduled_send_status["next_send_time"] = None
 
 def collect_common_points_background():
     global collecting_status
@@ -679,7 +673,12 @@ def click_all_common_points():
             with open(scheduled_messages_file, 'r', encoding='utf-8') as f:
                 scheduled_data = json.load(f)
             
-            messages = scheduled_data.get('messages', [])
+            # 检查文件格式：如果是列表直接使用，如果是字典则获取messages字段
+            if isinstance(scheduled_data, list):
+                messages = scheduled_data
+            else:
+                messages = scheduled_data.get('messages', [])
+            
             if not messages:
                 return jsonify({"success": False, "message": "定期发送话术.json文件中没有话术"})
             
@@ -928,9 +927,9 @@ def start_scheduled_send():
             global_keyboard_listener.start()
         
         if use_file:
-            return jsonify({"success": True, "message": f"开始从文件读取话术定期发送，按ESC键可快速停止"})
+            return jsonify({"success": True, "message": f"开始从文件读取话术定期发送"})
         else:
-            return jsonify({"success": True, "message": f"开始定期发送，按ESC键可快速停止"})
+            return jsonify({"success": True, "message": f"开始定期发送"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
