@@ -850,10 +850,19 @@
                                 <option value="random">随机设备</option>
                             </select>
                         </div>
+                        <div style="margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                <input type="checkbox" id="useProductReviewFile" onchange="toggleProductReviewFileMode()" style="width: auto;">
+                                <label for="useProductReviewFile" style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 0;">从群控产品好评话术读取</label>
+                            </div>
+                            <select id="productReviewMessageSelect" class="input-field" style="display: none;">
+                                <option value="">选择好评话术</option>
+                            </select>
+                        </div>
                         <button id="sendBtn" class="btn btn-success" onclick="sendMessage()" style="width: 100%; margin-bottom: 12px;">
                             发送消息
                         </button>
-                        <div id="sendStatus" class="status-text" style="font-size: 13px;">输入消息后点击发送，默认随机设备</div>
+                        <div id="sendStatus" class="status-text" style="font-size: 13px;">输入消息或选择好评话术后点击发送，默认随机设备</div>
                     </div>
                 </div>
 
@@ -1346,14 +1355,25 @@
             const groupSelect = document.getElementById('groupSelect');
             const sendBtn = document.getElementById('sendBtn');
             const sendStatus = document.getElementById('sendStatus');
+            const useProductReviewFile = document.getElementById('useProductReviewFile').checked;
+            const productReviewMessageSelect = document.getElementById('productReviewMessageSelect');
             
-            const message = messageInput.value.trim();
+            let message = messageInput.value.trim();
             const groupId = groupSelect.value;
             
-            if (!message) {
+            if (!useProductReviewFile && !message) {
                 sendStatus.textContent = '请输入消息内容';
                 sendStatus.className = 'status-text error';
                 return;
+            }
+            
+            if (useProductReviewFile) {
+                message = productReviewMessageSelect.value.trim();
+                if (!message) {
+                    sendStatus.textContent = '请选择好评话术';
+                    sendStatus.className = 'status-text error';
+                    return;
+                }
             }
             
             sendBtn.disabled = true;
@@ -1785,6 +1805,12 @@
                 const useScheduledFile = document.getElementById('useScheduledFile');
                 if (useScheduledFile && useScheduledFile.checked) {
                     await loadScheduledMessages();
+                }
+                
+                // 如果发送消息面板的"从群控产品好评话术读取"复选框被选中，重新加载话术列表
+                const useProductReviewFile = document.getElementById('useProductReviewFile');
+                if (useProductReviewFile && useProductReviewFile.checked) {
+                    await loadProductReviewMessages();
                 }
             }
         }
@@ -2594,6 +2620,57 @@
             } else {
                 batchMessageInput.style.display = 'block';
                 batchFileMessageSelect.style.display = 'none';
+            }
+        }
+
+        function toggleProductReviewFileMode() {
+            const useProductReviewFile = document.getElementById('useProductReviewFile').checked;
+            const messageInput = document.getElementById('messageInput');
+            const productReviewMessageSelect = document.getElementById('productReviewMessageSelect');
+            
+            if (useProductReviewFile) {
+                messageInput.style.display = 'none';
+                productReviewMessageSelect.style.display = 'block';
+                loadProductReviewMessages();
+            } else {
+                messageInput.style.display = 'block';
+                productReviewMessageSelect.style.display = 'none';
+            }
+        }
+
+        async function loadProductReviewMessages() {
+            try {
+                const productReviewMessageSelect = document.getElementById('productReviewMessageSelect');
+                
+                if (!selectedBatchProduct) {
+                    productReviewMessageSelect.innerHTML = '<option value="">请先在群控功能中选择产品</option>';
+                    return;
+                }
+                
+                let response = await fetch(`/api/scripts/${encodeURIComponent(selectedBatchProduct)}/好评`);
+                let data = await response.json();
+                
+                let messages = [];
+                if (data.success && data.scripts) {
+                    messages = data.scripts;
+                } else {
+                    response = await fetch(`/api/scripts/${encodeURIComponent(selectedBatchProduct)}/好评：`);
+                    data = await response.json();
+                    if (data.success && data.scripts) {
+                        messages = data.scripts;
+                    }
+                }
+                
+                if (messages.length > 0) {
+                    productReviewMessageSelect.innerHTML = '<option value="">选择好评话术</option>';
+                    messages.forEach(message => {
+                        productReviewMessageSelect.innerHTML += `<option value="${message}">${message}</option>`;
+                    });
+                } else {
+                    productReviewMessageSelect.innerHTML = '<option value="">该产品下没有"好评"或"好评："分类的话术</option>';
+                }
+            } catch (error) {
+                console.error('加载好评话术失败:', error);
             }
         }
 
